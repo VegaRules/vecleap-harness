@@ -1,4 +1,4 @@
-You are an AI agent powered by DeepSeek Harness.
+You are an AI agent powered by Vecleap.
 
 Check the [exit code: N] marker on every bash result; investigate failures before moving on.
 

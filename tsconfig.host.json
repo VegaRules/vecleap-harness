@@ -262,7 +262,9 @@
     { "path": "./packages/document/office-to-pdf" },
 
     { "path": "./packages/api/account-controller" },
+    { "path": "./packages/api/vecleap-hub-controller/tsconfig.host.json" },
     { "path": "./packages/credentials/deepseek-account-platform" },
+    { "path": "./packages/credentials/vecleap-auth-stub" },
     { "path": "./packages/credentials/deepseek-account" },
     { "path": "./packages/client/ui-deliverables/tsconfig.host.json" },
     { "path": "./vendor/cosmokit" },
@@ -446,6 +448,7 @@
     { "path": "./packages/bundle/sdk-app" },
     { "path": "./packages/bundle/sdk-minimal" },
     { "path": "./packages/bundle/web-app" },
+    { "path": "./packages/bundle/vecleap-product" },
     { "path": "./packages/boot/app-boot" },
     { "path": "./packages/boot/cmdline" },
     { "path": "./packages/sdk/server" },

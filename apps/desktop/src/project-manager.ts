@@ -23,8 +23,11 @@ import type { DesktopPaths } from './paths.ts'
 import type { DesktopRelease } from './release.ts'
 import { readDesktopRuntime } from './runtime-tree.ts'
 import {
-  initProfile, PROFILE_TEMPLATES, removeLinkProjections, sanitizeProfile, type ProfileTemplate,
+  initProfile, PROFILE_TEMPLATES, readProfileManifest, removeLinkProjections, sanitizeProfile,
+  writeProfileBundles, type ProfileTemplate,
 } from '@deepseek-ai/dsh-app-boot'
+
+const VECLEAP_PRODUCT_BUNDLE = '@deepseek-ai/dsh-vecleap-product'
 
 const PROJECT_NAME = '@deepseek-ai/dsh-desktop-runtime'
 const DSH_PACKAGE = '@deepseek-ai/dsh'
@@ -55,6 +58,17 @@ function migrateProfileSettings(projectDir: string): void {
   if (readFileSync(path, 'utf8').replaceAll('\r\n', '\n') === legacy) {
     writeFileSync(path, workspaceFile())
   }
+  ensureVecleapProductBundle(projectDir)
+}
+
+/** Append the Vecleap product bundle when an older desktop profile omitted it. */
+function ensureVecleapProductBundle(projectDir: string): void {
+  const manifestPath = join(projectDir, 'package.json')
+  if (!existsSync(manifestPath)) return
+  const manifest = readProfileManifest('dsh', projectDir)
+  const bundles = manifest.dsh?.profile?.bundles ?? []
+  if (bundles.includes(VECLEAP_PRODUCT_BUNDLE)) return
+  writeProfileBundles(projectDir, manifest, [...bundles, VECLEAP_PRODUCT_BUNDLE])
 }
 
 /** Initializes the Desktop profile and disables third-party bundles during recovery. */

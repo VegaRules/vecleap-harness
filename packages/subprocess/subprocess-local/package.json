@@ -1,6 +1,6 @@
 {
   "name": "@deepseek-ai/dsh-subprocess-local",
-  "description": "Local-subprocess implementation of the DeepSeek Harness subprocess seam",
+  "description": "Local-subprocess implementation of the Vecleap subprocess seam",
   "version": "0.2.1-alpha.2",
   "publishConfig": {
     "access": "public"

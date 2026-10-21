@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OminiTraffic 无人车调度 · 管理与看板（演示）</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #121a2b;
+      --panel2: #1a2438;
+      --border: rgba(0, 229, 255, 0.25);
+      --accent: #00e5ff;
+      --accent2: #00ff9d;
+      --warn: #ffeb3b;
+      --danger: #ff3d00;
+      --muted: #94a3b8;
+      --text: #e2e8f0;
+      --radius: 10px;
+      --font: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--font);
+      background: radial-gradient(1200px 600px at 20% -10%, #0d2847 0%, var(--bg) 55%);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+      background: rgba(11, 18, 32, 0.85);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    header h1 span { color: var(--accent); }
+    .badge-demo {
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(255, 235, 59, 0.15);
+      color: var(--warn);
+      border: 1px solid rgba(255, 235, 59, 0.35);
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      min-height: calc(100vh - 58px);
+    }
+    nav {
+      border-right: 1px solid var(--border);
+      padding: 16px 12px;
+      background: rgba(18, 26, 43, 0.6);
+    }
+    nav button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 10px 12px;
+      margin-bottom: 6px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    nav button:hover { background: rgba(0, 229, 255, 0.08); color: var(--text); }
+    nav button.active {
+      background: rgba(0, 229, 255, 0.12);
+      border-color: var(--border);
+      color: var(--accent);
+      font-weight: 600;
+    }
+    main { padding: 20px 24px 48px; max-width: 1200px; }
+    section { display: none; animation: fade 0.25s ease; }
+    section.visible { display: block; }
+    @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+    h2 { font-size: 1.35rem; margin: 0 0 8px; }
+    h3 { font-size: 1.05rem; margin: 20px 0 10px; color: var(--accent2); }
+    p.lead { color: var(--muted); margin: 0 0 20px; max-width: 720px; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      nav { display: flex; flex-wrap: wrap; gap: 6px; border-right: none; border-bottom: 1px solid var(--border); }
+      nav button { width: auto; flex: 1 1 auto; min-width: 120px; }
+      .grid2, .grid3 { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+    .card h4 { margin: 0 0 10px; font-size: 0.95rem; }
+    .flow {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+    }
+    .node {
+      padding: 6px 12px;
+      border-radius: 6px;
+      background: var(--panel2);
+      border: 1px solid rgba(148, 163, 184, 0.25);
+    }
+    .node.highlight { border-color: var(--accent); color: var(--accent); }
+    .arrow { color: var(--muted); }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    th, td {
+      padding: 8px 10px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+      text-align: left;
+    }
+    th { color: var(--muted); font-weight: 600; }
+    .pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .pill-idle { background: rgba(179, 136, 255, 0.2); color: #c4b5fd; }
+    .pill-boarding { background: rgba(0, 229, 255, 0.15); color: var(--accent); }
+    .pill-delivering { background: rgba(0, 255, 157, 0.12); color: var(--accent2); }
+    .pill-queued { background: rgba(255, 152, 0, 0.15); color: #ffb74d; }
+    .pill-fault { background: rgba(255, 61, 0, 0.15); color: #ff8a65; }
+    .pill-offline { background: rgba(96, 125, 139, 0.25); color: #90a4ae; }
+    .pill-low { background: rgba(255, 235, 59, 0.15); color: var(--warn); }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    select, button.btn {
+      background: var(--panel2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    button.btn.primary {
+      background: rgba(0, 229, 255, 0.2);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    button.btn:hover { filter: brightness(1.08); }
+    .map-box {
+      height: 280px;
+      border-radius: var(--radius);
+      background:
+        linear-gradient(rgba(0, 229, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 229, 255, 0.03) 1px, transparent 1px),
+        #0a1628;
+      background-size: 24px 24px;
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .map-dot {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 12px currentColor;
+    }
+    .map-label {
+      position: absolute;
+      font-size: 0.65rem;
+      white-space: nowrap;
+      transform: translate(-50%, 8px);
+      color: var(--muted);
+    }
+    .stat {
+      text-align: center;
+      padding: 12px;
+    }
+    .stat .num { font-size: 1.6rem; font-weight: 700; color: var(--accent2); }
+    .stat .lbl { font-size: 0.75rem; color: var(--muted); }
+    .arch-diagram {
+      font-family: ui-monospace, monospace;
+      font-size: 0.78rem;
+      line-height: 1.45;
+      white-space: pre;
+      overflow-x: auto;
+      color: #cbd5e1;
+      background: #0a101a;
+      padding: 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+    ul.compact { margin: 8px 0; padding-left: 1.2rem; color: var(--muted); font-size: 0.88rem; }
+    ul.compact li { margin-bottom: 4px; }
+    footer.note {
+      margin-top: 32px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .link-row { font-size: 0.82rem; color: var(--muted); }
+    .link-row code { color: var(--accent); font-size: 0.78rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1><span>OminiTraffic</span> 无人车 · 调度 / 管理 / 看板（静态演示）</h1>
+    <span class="badge-demo">模拟数据 · 与生产 Hub/Web 逻辑对齐</span>
+  </header>
+
+  <div class="layout">
+    <nav id="nav"></nav>
+    <main>
+      <!-- 1 总览 -->
+      <section id="sec-overview" class="visible">
+        <h2>系统总览</h2>
+        <p class="lead">
+          无人车能力分布在 <strong>Hub 后端</strong>（调度、新石器云 API、行程状态机）、<strong>Web 运营端</strong>（订单、行李看板、车队、大屏）、<strong>设备集群</strong>（Neolix 准入与遥测）、<strong>小程序</strong>（下单 / 行李 MatchAndBook）。本页用模拟数据复现核心链路，便于对外讲解。
+        </p>
+        <div class="arch-diagram">┌─────────────┐     JWT project_id      ┌──────────────────┐
+│ 小程序 / Web │ ───────────────────────►│ OminiTraffic Hub │
+└──────┬──────┘                         │  delivery 域     │
+       │                                 └────────┬─────────┘
+       │ 行李 MatchAndBook                         │
+       │ 代取/外卖订单                             │ VehicleGateway
+       ▼                                         ▼
+ delivery_luggage_orders              Neolix Cloud API (按项目凭证)
+ delivery_luggage_trips  ◄──trip_no──  batchGetVehicleList / vehicleStart
+ delivery_fleet_bindings (VIN 名册)    任务回调 backUrl
+       ▲
+       │ 设备准入 syncFleetBinding
+┌──────┴──────┐
+│ 设备集群     │  EdgeLink TCP（边端工控/相机，非车况主链路）
+└─────────────┘</div>
+        <h3>两条业务线（同一套车队，不同状态机）</h3>
+        <div class="grid2">
+          <div class="card">
+            <h4>代取 / 外卖（courier）</h4>
+            <ul class="compact">
+              <li>表：<code>delivery_orders</code> + <code>delivery_dispatches</code></li>
+              <li>后台 Worker：待调度认领 → 选车 → Neolix 发任务 → 回调 / MissionSync 推进</li>
+              <li>Web：配送订单 Tab、手动派车、轨迹</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>开学行李（luggage）</h4>
+            <ul class="compact">
+              <li>表：<code>delivery_luggage_orders</code> + <code>delivery_luggage_trips</code></li>
+              <li>下单：MatchAndBook（拼单 / 新车 / 排队）→ 订单挂 <code>trip_no</code> → 行程挂 <code>vin</code></li>
+              <li>Worker：ProcessQueue、ProcessDepartures、SyncTrips(GPS)</li>
+              <li>Web：行李看板、固定线路、提前发车、车辆治理 V2</li>
+            </ul>
+          </div>
+        </div>
+        <h3>订单如何关联到车</h3>
+        <p class="lead" style="margin-bottom:12px">
+          行李单 <strong>不存 VIN</strong>，通过 <code>trip_no</code> 关联 <code>delivery_luggage_trips.vin</code>。排队单 <code>trip_no</code> 为空，待 ProcessQueue 匹配后写入。
+        </p>
+        <div class="flow">
+          <span class="node">order_no</span><span class="arrow">→</span>
+          <span class="node highlight">trip_no</span><span class="arrow">→</span>
+          <span class="node highlight">VIN / vehicle_code</span><span class="arrow">→</span>
+          <span class="node">Neolix 任务 / GPS</span>
+        </div>
+      </section>
+
+      <!-- 2 车队管理 -->
+      <section id="sec-fleet">
+        <h2>车队管理</h2>
+        <p class="lead">名册在 <code>delivery_fleet_bindings</code>。Neolix 车审进配送项目时自动 upsert；也可 Web 手工维护。实时电量/GPS 来自新石器云快照（拉取，非车端直连 Hub）。</p>
+        <div class="toolbar">
+          <label>演示项目
+            <select id="fleet-project"></select>
+          </label>
+          <button class="btn primary" id="btn-fleet-refresh">刷新遥测（模拟）</button>
+          <button class="btn" id="btn-fleet-power">模拟上电</button>
+        </div>
+        <div class="card">
+          <table>
+            <thead>
+              <tr>
+                <th>车牌/代号</th><th>VIN</th><th>园区</th><th>启用</th><th>电量</th><th>上电</th><th>在线判定</th><th>故障</th>
+              </tr>
+            </thead>
+            <tbody id="fleet-tbody"></tbody>
+          </table>
+        </div>
+        <h3>相关 API（Hub）</h3>
+        <p class="link-row"><code>GET /api/delivery/fleet</code> · <code>POST /api/delivery/fleet/status</code> · <code>POST /api/delivery/fleet/:vin/power</code></p>
+      </section>
+
+      <!-- 3 行李调度 -->
+      <section id="sec-luggage">
+        <h2>行李调度逻辑</h2>
+        <p class="lead">小程序 <code>MatchAndBook</code> 与后台队列共用同一优先级。调度循环只扫描 <code>business_type=delivery</code> 且有车队绑定的项目。</p>
+        <h3>MatchAndBook 三级匹配</h3>
+        <div class="flow">
+          <span class="node highlight">P1 同路线候车行程</span><span class="arrow">→</span>
+          <span class="node highlight">P2 空闲车新建行程</span><span class="arrow">→</span>
+          <span class="node highlight">P3 入队 queued</span>
+        </div>
+        <h3>行程 / 订单状态机</h3>
+        <div class="grid2">
+          <div class="card">
+            <h4>行程 (trip)</h4>
+            <div class="flow">
+              <span class="node">boarding</span><span class="arrow">→</span>
+              <span class="node">delivering</span><span class="arrow">→</span>
+              <span class="node">arrived</span><span class="arrow">→</span>
+              <span class="node">returning</span><span class="arrow">→</span>
+              <span class="node">closed</span>
+            </div>
+            <p style="font-size:0.82rem;color:var(--muted);margin:10px 0 0">到达后订单转待取件，车辆可立即返程；GPS 进半径判到达/回场。</p>
+          </div>
+          <div class="card">
+            <h4>订单 (order)</h4>
+            <div class="flow">
+              <span class="node">queued</span><span class="arrow">→</span>
+              <span class="node">boarding</span><span class="arrow">→</span>
+              <span class="node">delivering</span><span class="arrow">→</span>
+              <span class="node">awaiting_pickup</span><span class="arrow">→</span>
+              <span class="node">completed</span>
+            </div>
+          </div>
+        </div>
+        <div class="toolbar" style="margin-top:16px">
+          <button class="btn primary" id="btn-sim-book">模拟下一单 MatchAndBook</button>
+          <button class="btn" id="btn-sim-queue">模拟 ProcessQueue（队首派车）</button>
+          <button class="btn" id="btn-sim-depart">模拟到点发车</button>
+          <button class="btn" id="btn-sim-gps">模拟 GPS 推进一程</button>
+        </div>
+        <div class="card">
+          <h4>模拟行程与订单</h4>
+          <table>
+            <thead><tr><th>订单号</th><th>trip_no</th><th>VIN</th><th>起→终</th><th>订单状态</th><th>行程状态</th></tr></thead>
+            <tbody id="luggage-sim-tbody"></tbody>
+          </table>
+        </div>
+        <h3>调度模式</h3>
+        <ul class="compact">
+          <li><strong>dynamic</strong>：同园区车队内选空闲车</li>
+          <li><strong>fixed_route</strong>（江阴）：必须存在启用线路 OD，且 VIN 限定在线路绑定车辆内</li>
+        </ul>
+      </section>
+
+      <!-- 4 代取调度 -->
+      <section id="sec-courier">
+        <h2>代取 / 外卖调度</h2>
+        <p class="lead">与行李分离：使用 <code>delivery_orders</code> 状态与 <code>delivery_dispatches</code> 执行投影。DispatchWorker 周期认领 <code>dispatching</code> 订单并调用 Neolix 发任务。</p>
+        <div class="flow" style="margin-bottom:16px">
+          <span class="node">created</span><span class="arrow">→</span>
+          <span class="node">dispatching</span><span class="arrow">→</span>
+          <span class="node">waiting_vehicle</span><span class="arrow">→</span>
+          <span class="node">enroute</span><span class="arrow">→</span>
+          <span class="node">arrived_dropoff</span><span class="arrow">→</span>
+          <span class="node">completed</span>
+        </div>
+        <div class="card">
+          <table>
+            <thead><tr><th>订单号</th><th>取件站</th><th>送达站</th><th>状态</th><th>VIN</th><th>任务 ID</th></tr></thead>
+            <tbody id="courier-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 5 运营看板 -->
+      <section id="sec-board">
+        <h2>行李运营看板（OpsBoard）</h2>
+        <p class="lead">Web 行李 Tab / 大屏右侧：<code>GET /api/delivery/luggage/board</code>。车辆状态 = 新石器快照（故障/低电）+ 进行中行程覆盖（boarding/delivering/…）。</p>
+        <div class="toolbar">
+          <select id="board-project"></select>
+          <button class="btn primary" id="btn-board-refresh">刷新看板</button>
+          <span id="board-ts" style="font-size:0.8rem;color:var(--muted)"></span>
+        </div>
+        <div class="grid2">
+          <div class="card">
+            <h4>车辆（<span id="board-vcount">0</span>）</h4>
+            <table><thead><tr><th>代号</th><th>状态</th><th>线路</th><th>电量</th><th>拼单</th></tr></thead>
+            <tbody id="board-vehicles"></tbody></table>
+          </div>
+          <div class="card">
+            <h4>排队队列</h4>
+            <table><thead><tr><th>队位</th><th>订单</th><th>起→终</th><th>件数</th><th>预计等待</th></tr></thead>
+            <tbody id="board-queue"></tbody></table>
+          </div>
+        </div>
+        <h3>车辆状态优先级（看板合成规则）</h3>
+        <div class="flow">
+          <span class="node">fault</span><span class="arrow">&gt;</span>
+          <span class="node">low_battery</span><span class="arrow">&gt;</span>
+          <span class="node">行程态 boarding/delivering/…</span><span class="arrow">&gt;</span>
+          <span class="node">idle</span>
+          <span style="color:var(--muted);font-size:0.8rem">（offline 为规划增强项）</span>
+        </div>
+      </section>
+
+      <!-- 6 大屏 -->
+      <section id="sec-bigscreen">
+        <h2>配送大屏</h2>
+        <p class="lead">DeliveryBigScreen：左栏订单/车辆统计，中栏地图（<code>fleet/status</code> 位置），右栏行李车辆与今日订单；刷新约 stats 30s / fleet 10s / board 15s。</p>
+        <div class="grid3" style="margin-bottom:16px">
+          <div class="card stat"><div class="num" id="bs-today">0</div><div class="lbl">今日行李单</div></div>
+          <div class="card stat"><div class="num" id="bs-active">0</div><div class="lbl">进行中行程</div></div>
+          <div class="card stat"><div class="num" id="bs-online">0</div><div class="lbl">上电车辆</div></div>
+        </div>
+        <div class="map-box" id="map-box"></div>
+        <p style="font-size:0.8rem;color:var(--muted);margin-top:8px">圆点颜色：上电且非故障为青绿，下电为灰，低电/故障为黄/红。</p>
+      </section>
+
+      <!-- 7 设备与遥测 -->
+      <section id="sec-device">
+        <h2>设备集群 & 遥测</h2>
+        <p class="lead">Neolix 车在设备页显示在线 = <code>vehicleAvailable==1 || powerState</code>（云快照）。EdgeLink :8083 管边端设备连接，不等于无人车 GPS 流。</p>
+        <div class="card">
+          <table>
+            <thead><tr><th>来源</th><th>数据</th><th>刷新方式</th></tr></thead>
+            <tbody>
+              <tr><td>新石器 Cloud</td><td>电量、GPS、上电、故障、任务</td><td>HTTP 拉取 batchGetVehicleList；token+签名</td></tr>
+              <tr><td>项目凭证</td><td>project_neolix_credentials</td><td>按 X-Project-Id 隔离</td></tr>
+              <tr><td>任务回调</td><td>missionStatus（非 GPS 流）</td><td>StartMission 时 backUrl</td></tr>
+              <tr><td>行李 SyncTrips</td><td>到达/回场</td><td>Worker 用 BatchStatus 取 GPS</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 8 车辆治理 V2 -->
+      <section id="sec-governance">
+        <h2>车辆治理 V2</h2>
+        <p class="lead">影子状态、统一控制面、命令账本与事件流；与行李调度「外控/离线摘除」开关联动。Web：<code>VehicleGovernancePanel</code>。</p>
+        <div class="grid2">
+          <div class="card">
+            <h4>功能开关（示例）</h4>
+            <ul class="compact" id="v2-flags"></ul>
+          </div>
+          <div class="card">
+            <h4>最近命令（模拟）</h4>
+            <table><thead><tr><th>时间</th><th>VIN</th><th>命令</th><th>状态</th></tr></thead>
+            <tbody id="cmd-tbody"></tbody></table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 9 API 索引 -->
+      <section id="sec-api">
+        <h2>API 与模块索引</h2>
+        <div class="card">
+          <table>
+            <thead><tr><th>能力</th><th>路径 / 模块</th></tr></thead>
+            <tbody>
+              <tr><td>行李看板</td><td><code>GET /api/delivery/luggage/board</code> · OminiTrafficWeb Delivery</td></tr>
+              <tr><td>行李订单列表</td><td><code>GET /api/delivery/luggage/orders</code></td></tr>
+              <tr><td>提前发车</td><td><code>POST /api/delivery/luggage/trips/:tripNo/depart</code></td></tr>
+              <tr><td>固定线路</td><td><code>/api/delivery/luggage/routes</code> · dispatch-mode</td></tr>
+              <tr><td>打印行李单</td><td><code>GET /api/delivery/print/orders</code>（按 from_station_id）</td></tr>
+              <tr><td>小程序行李</td><td><code>/api/v1/luggage/match-and-book</code> · booking-context</td></tr>
+              <tr><td>车队状态</td><td><code>POST /api/delivery/fleet/status</code></td></tr>
+              <tr><td>车辆治理</td><td><code>/api/delivery/vehicles/*</code> · vehicleApi</td></tr>
+              <tr><td>设备 Neolix</td><td>DeviceManagement · neolixApi</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <footer class="note">
+          代码参考：Hub <code>luggage_dispatch_service.go</code>、<code>dispatch_service.go</code>、<code>gateway.go</code>；
+          Web <code>OminiTrafficWeb/src/modules/Delivery</code>、<code>DeliveryBigScreen</code>。
+          本文件为演示用静态页，打开方式：浏览器直接打开 <code>vehicle-dispatch-showcase.html</code>。
+        </footer>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const NAV = [
+      { id: 'overview', label: '总览' },
+      { id: 'fleet', label: '车队管理' },
+      { id: 'luggage', label: '行李调度' },
+      { id: 'courier', label: '代取调度' },
+      { id: 'board', label: '运营看板' },
+      { id: 'bigscreen', label: '配送大屏' },
+      { id: 'device', label: '设备遥测' },
+      { id: 'governance', label: '治理 V2' },
+      { id: 'api', label: 'API 索引' },
+    ];
+
+    const PROJECTS = {
+      4: { name: '南京理工大学-钟山校区', mode: 'dynamic', park: '026223' },
+      5: { name: '南京理工大学-江阴校区', mode: 'fixed_route', park: '031778' },
+    };
+
+    let fleet = [
+      { projectId: 4, vin: 'LHTDA4B48SYC6A073', code: 'X6S7673', park: '026223', enabled: true, battery: 78, power: true, fault: 0 },
+      { projectId: 4, vin: 'LHTDA4B48SYC6A074', code: 'X6S7674', park: '026223', enabled: true, battery: 12, power: true, fault: 0 },
+      { projectId: 5, vin: 'LHTDA4B48SYC6A080', code: 'JY-01', park: '031778', enabled: true, battery: 65, power: true, fault: 0 },
+      { projectId: 5, vin: 'LHTDA4B48SYC6A081', code: 'JY-02', park: '031778', enabled: true, battery: 0, power: false, fault: 0 },
+    ];
+
+    let trips = [
+      { tripNo: 'LT1787803930384', projectId: 5, vin: 'LHTDA4B48SYC6A080', from: '南门装货点', to: '宿舍5A/B', status: 'delivering', participants: 2 },
+      { tripNo: 'LT1787803836141', projectId: 4, vin: 'LHTDA4B48SYC6A073', from: '2号停车点', to: '3号停车点', status: 'boarding', participants: 3 },
+    ];
+
+    let luggageOrders = [
+      { orderNo: 'LG1787803930387', projectId: 5, tripNo: 'LT1787803930384', vin: 'LHTDA4B48SYC6A080', from: '南门装货点', to: '宿舍5A/B', oStatus: 'delivering', tStatus: 'delivering' },
+      { orderNo: 'LG1787803836148', projectId: 4, tripNo: 'LT1787803836141', vin: 'LHTDA4B48SYC6A073', from: '2号停车点', to: '3号停车点', oStatus: 'boarding', tStatus: 'boarding' },
+      { orderNo: 'LG1787842743498', projectId: 3, tripNo: '', vin: '', from: '东门菜鸟驿站', to: '自动化学院', oStatus: 'queued', tStatus: '—' },
+    ];
+
+    const courierOrders = [
+      { orderNo: 'D202608240127010010', pickup: '2号停车点', drop: '3号停车点', status: 'enroute_dropoff', vin: 'LHTDA4B48SYC6A073', mission: 880012 },
+      { orderNo: 'D202608240127010011', pickup: '2号停车点', drop: '4号停车点', status: 'waiting_vehicle', vin: '', mission: 0 },
+    ];
+
+    const queue = [
+      { orderNo: 'LG-QUEUE-001', from: '2号停车点', to: '5号停车点', count: 2, queueNo: 1, wait: 15 },
+    ];
+
+    const v2Flags = [
+      { key: 'luggage_vehicle_shadow_enabled', on: true, label: '车辆影子态' },
+      { key: 'luggage_external_guard_enabled', on: true, label: '外控/离线摘除调度池' },
+      { key: 'luggage_auto_depart_enabled', on: false, label: '自动到点发车 API' },
+      { key: 'luggage_unified_control_enabled', on: true, label: '统一控制面' },
+    ];
+
+    const commands = [
+      { t: '22:10:03', vin: 'LHTDA4B48SYC6A080', cmd: 'power_on', st: 'success' },
+      { t: '21:55:12', vin: 'LHTDA4B48SYC6A073', cmd: 'start_mission', st: 'success' },
+    ];
+
+    function pill(state) {
+      const map = {
+        idle: 'pill-idle', boarding: 'pill-boarding', delivering: 'pill-delivering',
+        queued: 'pill-queued', fault: 'pill-fault', offline: 'pill-offline', low_battery: 'pill-low',
+        arrived: 'pill-boarding', returning: 'pill-delivering', awaiting_pickup: 'pill-boarding',
+      };
+      const cls = map[state] || 'pill-idle';
+      const labels = {
+        idle: '空闲', boarding: '候车拼单', delivering: '配送中', queued: '排队中',
+        fault: '故障', offline: '离线', low_battery: '低电量', arrived: '已到达', returning: '返程',
+        awaiting_pickup: '待取件', enroute_dropoff: '前往送达', waiting_vehicle: '待发车',
+      };
+      return `<span class="pill ${cls}">${labels[state] || state}</span>`;
+    }
+
+    function vehicleBoardState(v, trip) {
+      if (v.fault) return 'fault';
+      if (v.battery > 0 && v.battery < 15) return 'low_battery';
+      if (!v.power) return 'offline';
+      if (trip) return trip.status === 'closed' ? 'idle' : trip.status;
+      return 'idle';
+    }
+
+    function renderNav() {
+      const nav = document.getElementById('nav');
+      nav.innerHTML = NAV.map((n, i) =>
+        `<button type="button" data-sec="${n.id}" class="${i === 0 ? 'active' : ''}">${n.label}</button>`
+      ).join('');
+      nav.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          nav.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          document.querySelectorAll('main section').forEach(s => s.classList.remove('visible'));
+          document.getElementById('sec-' + btn.dataset.sec).classList.add('visible');
+          if (btn.dataset.sec === 'bigscreen') renderBigScreen();
+        });
+      });
+    }
+
+    function fillProjectSelects() {
+      ['fleet-project', 'board-project'].forEach(id => {
+        const el = document.getElementById(id);
+        el.innerHTML = Object.entries(PROJECTS).map(([k, v]) =>
+          `<option value="${k}">${v.name}</option>`
+        ).join('');
+      });
+    }
+
+    function renderFleet() {
+      const pid = +document.getElementById('fleet-project').value;
+      const tbody = document.getElementById('fleet-tbody');
+      const rows = fleet.filter(f => f.projectId === pid);
+      tbody.innerHTML = rows.map(f => {
+        const online = f.power || f.battery > 0;
+        return `<tr>
+          <td>${f.code}</td><td><code style="font-size:0.75rem">${f.vin.slice(-8)}…</code></td>
+          <td>${f.park}</td><td>${f.enabled ? '是' : '否'}</td>
+          <td>${f.battery}%</td><td>${f.power ? '上电' : '下电'}</td>
+          <td>${online ? '在线(云)' : '离线(云)'}</td>
+          <td>${f.fault ? '是' : '否'}</td>
+        </tr>`;
+      }).join('') || '<tr><td colspan="8">无车队绑定</td></tr>';
+    }
+
+    function renderLuggageSim() {
+      const tbody = document.getElementById('luggage-sim-tbody');
+      tbody.innerHTML = luggageOrders.map(o => `<tr>
+        <td>${o.orderNo}</td><td>${o.tripNo || '—'}</td><td>${o.vin ? o.vin.slice(-6) : '—'}</td>
+        <td>${o.from} → ${o.to}</td><td>${pill(o.oStatus)}</td><td>${o.tStatus}</td>
+      </tr>`).join('');
+    }
+
+    function renderCourier() {
+      document.getElementById('courier-tbody').innerHTML = courierOrders.map(o => `<tr>
+        <td>${o.orderNo}</td><td>${o.pickup}</td><td>${o.drop}</td><td>${pill(o.status)}</td>
+        <td>${o.vin ? o.vin.slice(-6) : '—'}</td><td>${o.mission || '—'}</td>
+      </tr>`).join('');
+    }
+
+    function renderBoard() {
+      const pid = +document.getElementById('board-project').value;
+      const fl = fleet.filter(f => f.projectId === pid);
+      const tr = trips.filter(t => t.projectId === pid && t.status !== 'closed');
+      document.getElementById('board-vcount').textContent = fl.length;
+      document.getElementById('board-vehicles').innerHTML = fl.map(f => {
+        const trip = tr.find(t => t.vin === f.vin);
+        const st = vehicleBoardState(f, trip);
+        return `<tr>
+          <td>${f.code}</td><td>${pill(st)}</td>
+          <td>${trip ? trip.from + '→' + trip.to : '—'}</td>
+          <td>${f.battery}%</td><td>${trip ? trip.participants : 0}</td>
+        </tr>`;
+      }).join('');
+      const q = pid === 4 ? queue : [];
+      document.getElementById('board-queue').innerHTML = q.length ? q.map(q => `<tr>
+        <td>#${q.queueNo}</td><td>${q.orderNo}</td><td>${q.from}→${q.to}</td><td>${q.count}</td><td>${q.wait} 分钟</td>
+      </tr>`).join('') : '<tr><td colspan="5">无排队</td></tr>';
+      document.getElementById('board-ts').textContent = '更新时间 ' + new Date().toLocaleTimeString();
+    }
+
+    function renderBigScreen() {
+      const pid = 5;
+      const fl = fleet.filter(f => f.projectId === pid);
+      const activeTrips = trips.filter(t => t.projectId === pid && !['closed', 'boarding'].includes(t.status)).length;
+      document.getElementById('bs-today').textContent = luggageOrders.filter(o => o.projectId === pid).length + 12;
+      document.getElementById('bs-active').textContent = activeTrips;
+      document.getElementById('bs-online').textContent = fl.filter(f => f.power).length;
+      const map = document.getElementById('map-box');
+      map.innerHTML = '';
+      const positions = [
+        { x: 25, y: 40, f: fl[0] },
+        { x: 55, y: 55, f: fl[1] },
+        { x: 72, y: 30, f: fl[0] },
+      ];
+      positions.forEach((p, i) => {
+        if (!p.f) return;
+        const color = p.f.fault ? '#ff3d00' : (p.f.battery < 15 ? '#ffeb3b' : (p.f.power ? '#00ff9d' : '#666'));
+        const dot = document.createElement('div');
+        dot.className = 'map-dot';
+        dot.style.left = p.x + '%';
+        dot.style.top = p.y + '%';
+        dot.style.background = color;
+        dot.style.color = color;
+        map.appendChild(dot);
+        const lab = document.createElement('div');
+        lab.className = 'map-label';
+        lab.style.left = p.x + '%';
+        lab.style.top = p.y + '%';
+        lab.textContent = p.f.code;
+        map.appendChild(lab);
+      });
+    }
+
+    function renderGovernance() {
+      document.getElementById('v2-flags').innerHTML = v2Flags.map(f =>
+        `<li>${f.label}：<strong>${f.on ? '开启' : '关闭'}</strong></li>`
+      ).join('');
+      document.getElementById('cmd-tbody').innerHTML = commands.map(c =>
+        `<tr><td>${c.t}</td><td>…${c.vin.slice(-6)}</td><td>${c.cmd}</td><td>${c.st}</td></tr>`
+      ).join('');
+    }
+
+    function genOrderNo() {
+      return 'LG' + Date.now().toString().slice(0, 13);
+    }
+
+    document.getElementById('btn-fleet-refresh').addEventListener('click', () => {
+      fleet.forEach(f => {
+        f.battery = Math.max(5, Math.min(100, f.battery + (Math.random() * 10 - 3) | 0));
+      });
+      renderFleet();
+    });
+
+    document.getElementById('btn-fleet-power').addEventListener('click', () => {
+      const pid = +document.getElementById('fleet-project').value;
+      const f = fleet.find(x => x.projectId === pid && x.enabled);
+      if (f) { f.power = !f.power; if (f.power && f.battery === 0) f.battery = 45; }
+      renderFleet();
+    });
+
+    document.getElementById('btn-sim-book').addEventListener('click', () => {
+      const trip = trips.find(t => t.projectId === 4 && t.status === 'boarding');
+      if (trip) {
+        luggageOrders.unshift({
+          orderNo: genOrderNo(), projectId: 4, tripNo: trip.tripNo, vin: trip.vin,
+          from: trip.from, to: trip.to, oStatus: 'boarding', tStatus: 'boarding',
+        });
+        trip.participants++;
+      } else {
+        luggageOrders.unshift({
+          orderNo: genOrderNo(), projectId: 4, tripNo: '', vin: '',
+          from: '2号停车点', to: '4号停车点', oStatus: 'queued', tStatus: '—',
+        });
+        queue.push({ orderNo: luggageOrders[0].orderNo, from: '2号停车点', to: '4号停车点', count: 1, queueNo: queue.length, wait: 20 });
+      }
+      renderLuggageSim();
+      renderBoard();
+    });
+
+    document.getElementById('btn-sim-queue').addEventListener('click', () => {
+      const q = luggageOrders.find(o => o.oStatus === 'queued' && o.projectId === 4);
+      const idle = fleet.find(f => f.projectId === 4 && f.enabled && f.battery >= 15 && !f.fault);
+      if (!q || !idle) { alert('模拟：需要钟山 queued 单 + 可用车'); return; }
+      const tripNo = 'LT' + Date.now().toString().slice(-10);
+      trips.push({ tripNo, projectId: 4, vin: idle.vin, from: q.from, to: q.to, status: 'boarding', participants: 1 });
+      q.tripNo = tripNo; q.vin = idle.vin; q.oStatus = 'boarding'; q.tStatus = 'boarding';
+      const qi = queue.findIndex(x => x.orderNo === q.orderNo);
+      if (qi >= 0) queue.splice(qi, 1);
+      renderLuggageSim();
+      renderBoard();
+    });
+
+    document.getElementById('btn-sim-depart').addEventListener('click', () => {
+      const t = trips.find(x => x.status === 'boarding');
+      if (!t) { alert('无 boarding 行程'); return; }
+      t.status = 'delivering';
+      luggageOrders.filter(o => o.tripNo === t.tripNo).forEach(o => { o.oStatus = 'delivering'; o.tStatus = 'delivering'; });
+      renderLuggageSim();
+      renderBoard();
+    });
+
+    document.getElementById('btn-sim-gps').addEventListener('click', () => {
+      const t = trips.find(x => x.status === 'delivering');
+      if (!t) { alert('无 delivering 行程'); return; }
+      t.status = 'arrived';
+      luggageOrders.filter(o => o.tripNo === t.tripNo).forEach(o => { o.oStatus = 'awaiting_pickup'; o.tStatus = 'arrived'; });
+      setTimeout(() => { t.status = 'returning'; t.tStatus = 'returning'; renderLuggageSim(); renderBoard(); }, 300);
+      renderLuggageSim();
+      renderBoard();
+    });
+
+    document.getElementById('btn-board-refresh').addEventListener('click', renderBoard);
+    document.getElementById('fleet-project').addEventListener('change', renderFleet);
+    document.getElementById('board-project').addEventListener('change', renderBoard);
+
+    renderNav();
+    fillProjectSelects();
+    renderFleet();
+    renderLuggageSim();
+    renderCourier();
+    renderBoard();
+    renderGovernance();
+  </script>
+</body>
+</html>

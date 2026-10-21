@@ -1,12 +1,12 @@
 {
-  "name": "DeepSeek Harness",
-  "short_name": "DSH",
+  "name": "Vecleap Harness",
+  "short_name": "Vecleap",
   "start_url": "./",
   "scope": "./",
   "display": "fullscreen",
   "icons": [
     {
-      "src": "favicon.svg",
+      "src": "favicon.png",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"

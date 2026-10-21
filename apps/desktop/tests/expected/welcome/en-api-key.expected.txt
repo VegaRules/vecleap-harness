@@ -1,8 +1,10 @@
-DeepSeek Harness
-DeepSeek Harness
+Vecleap
+Vecleap Harness
+Welcome to Vecleap
+Sign in to VecLeap Cloud (Hub) or add your own API key to start building.
 Add an API key to get started
-Configure official DeepSeek models to start using Harness
+Save your API key (VECLEAP_API_KEY). Set VECLEAP_API_BASE_URL in the environment for your gateway.
 Enter API key [password]
 Save and continue [disabled]
-Set up later
 Back to sign in
+Set up later

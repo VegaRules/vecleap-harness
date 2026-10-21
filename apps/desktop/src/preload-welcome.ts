@@ -23,6 +23,8 @@ const api: WelcomeApi = {
     ipcRenderer.on(WELCOME_IPC.state, receive)
     return () => { ipcRenderer.removeListener(WELCOME_IPC.state, receive) }
   },
+  loginWithHub: (email: string, password: string) =>
+    ipcRenderer.invoke(WELCOME_IPC.hubLogin, email, password) as Promise<WelcomeSaveResult>,
   saveApiKey: (value: string) => ipcRenderer.invoke(WELCOME_IPC.saveApiKey, value) as Promise<WelcomeSaveResult>,
   skip: () => ipcRenderer.invoke(WELCOME_IPC.skip) as Promise<void>,
 }

@@ -204,6 +204,17 @@ function platformLoginUrl(authorizeUrl: string): string {
   return url.href
 }
 
+/** Vecleap product builds must not open DeepSeek Platform authorization in the system browser. */
+function isBlockedPlatformAuthorizeUrl(authorizeUrl: string): boolean {
+  let url: URL
+  try {
+    url = new URL(authorizeUrl)
+  } catch {
+    return false
+  }
+  return url.hostname === 'platform.deepseek.com' && url.pathname.startsWith('/dsh/')
+}
+
 function createWindow(preload: string, show = false, primary = false): BrowserWindow {
   const window = new BrowserWindow({
     width: 1280,
@@ -465,7 +476,9 @@ async function main(): Promise<void> {
           const attempt = state.attempt
           if (attempt?.phase === 'waiting-browser' && attempt.authorizeUrl !== undefined && openedAttempt !== attempt.id) {
             openedAttempt = attempt.id
-            void shell.openExternal(platformLoginUrl(attempt.authorizeUrl)).catch(() => undefined)
+            if (!isBlockedPlatformAuthorizeUrl(attempt.authorizeUrl)) {
+              void shell.openExternal(platformLoginUrl(attempt.authorizeUrl)).catch(() => undefined)
+            }
           }
           if ((attempt?.phase === 'failed' || attempt?.phase === 'expired') && returnedAttempt !== attempt.id) {
             returnedAttempt = attempt.id
@@ -929,7 +942,7 @@ async function main(): Promise<void> {
   const applicationIconPath = development ? join(app.getAppPath(), 'resources', 'icon-windows.png')
     : join(process.resourcesPath, 'icon.png')
   app.setAboutPanelOptions({
-    applicationName: 'DeepSeek Harness',
+    applicationName: 'Vecleap',
     applicationVersion: app.getVersion(),
     // The release has no separate build number; omit Electron's bundle version.
     version: '',
@@ -1168,6 +1181,13 @@ async function main(): Promise<void> {
             throw new Error('desktop welcome: login link is unavailable')
           }
           await clipboard.writeText(platformLoginUrl(state.attempt.authorizeUrl))
+        },
+        loginWithHub: async (email, password) => {
+          if (welcomeBackend === undefined) return { ok: false }
+          const saved = await welcomeBackend.loginWithHub(email, password)
+          if (!saved.ok) return saved
+          await enterWorkspace()
+          return { ok: true }
         },
         saveApiKey: async (apiKey) => {
           if (backend.host === undefined || welcomeBackend === undefined) return { ok: false }

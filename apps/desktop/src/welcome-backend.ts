@@ -28,6 +28,8 @@ export interface DesktopWelcomeBackend {
    * @returns A safe write outcome without provider diagnostics.
    */
   save(apiKey: string): Promise<{ ok: boolean }>
+  /** @returns Hub password login outcome without token values. */
+  loginWithHub(email: string, password: string): Promise<{ ok: boolean }>
 }
 
 function record(value: unknown): value is Record<string, unknown> {
@@ -75,7 +77,7 @@ export async function connectDesktopWelcome(
     const official: unknown = settings.namespaces.find((item: unknown) => record(item) && item.ns === 'llm-deepseek')
     if (official === undefined) return { settings: { namespaces: settings.namespaces }, ref: undefined }
     if (!record(official) || !record(official.value) || typeof official.value.apiKeyEnv !== 'string') {
-      throw new Error('desktop welcome: missing official DeepSeek credential reference')
+      throw new Error('desktop welcome: missing Vecleap API key credential reference')
     }
     return { settings: { namespaces: settings.namespaces }, ref: official.value.apiKeyEnv }
   }
@@ -143,6 +145,19 @@ export async function connectDesktopWelcome(
         return { ok: true }
       } catch {
         // Provider diagnostics may contain credentials; the native form owns failure copy.
+        return { ok: false }
+      }
+    },
+    async loginWithHub(email, password) {
+      try {
+        const result = await invoke({
+          namespace: 'vecleapHub',
+          method: 'loginWithPassword',
+          args: { email, password },
+        })
+        if (!record(result) || result.ok !== true) return { ok: false }
+        return { ok: true }
+      } catch {
         return { ok: false }
       }
     },

@@ -6,6 +6,7 @@ import type { DesktopLocale } from './locale.ts'
 
 /** Private native welcome channels, installed only while its window exists. */
 export const WELCOME_IPC = {
+  hubLogin: 'dsh-welcome:hub-login',
   saveApiKey: 'dsh-welcome:save-api-key',
   analytics: 'dsh-welcome:analytics',
   analyticsEnabled: 'dsh-welcome:analytics-enabled',
@@ -41,6 +42,12 @@ export interface WelcomeOperations {
   copySignInLink(id: SignInAttemptId): Promise<void>
 
   /**
+   * Sign in with VecLeap Hub email and password (Host proxies to Hub REST).
+   * @param email - Hub account email.
+   * @param password - Hub account password.
+   */
+  loginWithHub(email: string, password: string): Promise<WelcomeSaveResult>
+  /**
    * Store the official provider's key before entering the workspace.
    * @param value - validated, trimmed API key.
    * @returns whether the write completed, without private error details.
@@ -71,5 +78,5 @@ export interface WelcomeAuthentication {
  * @returns true only when neither authentication route is configured.
  */
 export function needsWelcome(authentication: WelcomeAuthentication): boolean {
-  return !authentication.loggedIn && !authentication.hasApiKey
+  return !authentication.hasApiKey
 }

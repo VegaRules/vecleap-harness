@@ -1,0 +1,173 @@
+<mxfile host="localhost" pages="3">
+  <diagram id="axntna46-n69a" name="Profile 启动层">
+    <mxGraphModel dx="2186" dy="1127" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" style="text;fontSize=14;whiteSpace=wrap;html=1;" value="&lt;b&gt;DSH 启动：Profile 洋葱层&lt;/b&gt;&lt;br&gt;外层覆盖内层（patch 按 id 整行替换）" vertex="1">
+          <mxGeometry height="50" width="400" x="200" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="p5" parent="1" style="fillColor=#fff2cc;strokeColor=#d6b656;rounded=1;whiteSpace=wrap;html=1;" value="--patch 命令行 / 环境 overlay" vertex="1">
+          <mxGeometry height="40" width="300" x="250" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="p4" parent="1" style="fillColor=#fff2cc;strokeColor=#d6b656;rounded=1;whiteSpace=wrap;html=1;" value="$DSH_HOME/cordis.patch.yml（用户全局）" vertex="1">
+          <mxGeometry height="40" width="300" x="250" y="130" as="geometry" />
+        </mxCell>
+        <mxCell id="p3" parent="1" style="fillColor=#fff2cc;strokeColor=#d6b656;rounded=1;whiteSpace=wrap;html=1;" value="profiles/&lt;name&gt;/cordis.patch.yml" vertex="1">
+          <mxGeometry height="40" width="300" x="250" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="p2" parent="1" style="fillColor=#fff2cc;strokeColor=#d6b656;rounded=1;whiteSpace=wrap;html=1;" value="Bundle 栈：web-app → vecleap-product → … → base" vertex="1">
+          <mxGeometry height="40" width="300" x="250" y="230" as="geometry" />
+        </mxCell>
+        <mxCell id="p1" parent="1" style="fillColor=#dae8fc;strokeColor=#6c8ebf;rounded=1;whiteSpace=wrap;html=1;" value="空 entry 列表 + Cordis Loader" vertex="1">
+          <mxGeometry height="40" width="300" x="250" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="out" parent="1" style="fillColor=#d5e8d4;strokeColor=#82b366;rounded=1;whiteSpace=wrap;html=1;" value="激活后的 ctx.* 服务树&lt;br&gt;（agent-loop / sessions / llm / tools …）" vertex="1">
+          <mxGeometry height="50" width="360" x="220" y="350" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="1" source="p5" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;entryX=0.5;entryY=0;endArrow=block;html=1;" target="p4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="p4" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;entryX=0.5;entryY=0;endArrow=block;html=1;" target="p3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="p3" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;entryX=0.5;entryY=0;endArrow=block;html=1;" target="p2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="p2" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;entryX=0.5;entryY=0;endArrow=block;html=1;" target="p1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="p1" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;entryX=0.5;entryY=0;endArrow=block;html=1;" target="out">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="note" parent="1" style="text;align=left;whiteSpace=wrap;html=1;" value="比喻：像 Photoshop 图层——&lt;br&gt;最上面一层决定最终像素；&lt;br&gt;插件是图层里的「智能对象」。" vertex="1">
+          <mxGeometry height="80" width="180" x="40" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="dsh" parent="1" style="ellipse;fillColor=#dae8fc;strokeColor=#6c8ebf;rounded=1;whiteSpace=wrap;html=1;" value="dsh --profile web" vertex="1">
+          <mxGeometry height="60" width="140" x="580" y="200" as="geometry" />
+        </mxCell>
+        <mxCell id="ed1" edge="1" parent="1" source="dsh" style="edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;entryX=1;entryY=0.5;html=1;" target="p5" value="boot()">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="x492cm07-dc25" name="进程拓扑">
+    <mxGraphModel dx="2186" dy="1127" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="t" parent="1" style="text;fontSize=14;whiteSpace=wrap;html=1;" value="&lt;b&gt;Web / Desktop 运行时拓扑&lt;/b&gt;" vertex="1">
+          <mxGeometry height="30" width="320" x="240" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="hostbox" parent="1" style="swimlane;fillColor=#dae8fc;strokeColor=#6c8ebf;rounded=1;whiteSpace=wrap;html=1;" value="Host（Node 进程）&lt;br&gt;Cordis ctx + HTTP/WS" vertex="1">
+          <mxGeometry height="220" width="340" x="40" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="h1" parent="hostbox" style="rounded=1;whiteSpace=wrap;html=1;" value="agent-loop / sessions" vertex="1">
+          <mxGeometry height="40" width="140" x="20" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="h2" parent="hostbox" style="rounded=1;whiteSpace=wrap;html=1;" value="api-* Remote 控制器" vertex="1">
+          <mxGeometry height="40" width="140" x="180" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="h3" parent="hostbox" style="rounded=1;whiteSpace=wrap;html=1;" value="webserver + connection" vertex="1">
+          <mxGeometry height="40" width="140" x="20" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="h4" parent="hostbox" style="rounded=1;whiteSpace=wrap;html=1;" value="session persistence" vertex="1">
+          <mxGeometry height="40" width="140" x="180" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="h5" parent="hostbox" style="rounded=1;whiteSpace=wrap;html=1;" value="tools / fs / shell / llm" vertex="1">
+          <mxGeometry height="40" width="200" x="70" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="browser" parent="1" style="swimlane;fillColor=#d5e8d4;strokeColor=#82b366;rounded=1;whiteSpace=wrap;html=1;" value="Client（浏览器 / Electron Renderer）&lt;br&gt;React + ui-conversation" vertex="1">
+          <mxGeometry height="220" width="340" x="420" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="b1" parent="browser" style="rounded=1;whiteSpace=wrap;html=1;" value="Remote RPC（session.prompt）" vertex="1">
+          <mxGeometry height="35" width="300" x="20" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="b2" parent="browser" style="rounded=1;whiteSpace=wrap;html=1;" value="Conversation 装配 → Chat 视图" vertex="1">
+          <mxGeometry height="35" width="300" x="20" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="b3" parent="browser" style="rounded=1;whiteSpace=wrap;html=1;" value="ui-vecleap-delivery 等业务面板" vertex="1">
+          <mxGeometry height="35" width="300" x="20" y="140" as="geometry" />
+        </mxCell>
+        <mxCell id="b4" parent="browser" style="rounded=1;whiteSpace=wrap;html=1;" value="session/event 增量订阅" vertex="1">
+          <mxGeometry height="35" width="300" x="20" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="desk" parent="1" style="swimlane;fillColor=#fff2cc;strokeColor=#d6b656;rounded=1;whiteSpace=wrap;html=1;" value="Desktop 额外层&lt;br&gt;Electron Main + RunAsNode Host&lt;br&gt;dsh-app:// 协议 / 托盘 / IPC" vertex="1">
+          <mxGeometry height="90" width="720" x="40" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="rpc" edge="1" parent="1" source="h3" style="edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.3;entryX=0;entryY=0.3;dashed=1;html=1;" target="b1" value="HTTP + WebSocket（凭证）">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ev" edge="1" parent="1" source="h2" style="edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.7;entryX=0;entryY=0.7;html=1;" target="b4" value="事件流 / 投影 snapshot">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="met" parent="1" style="text;align=left;whiteSpace=wrap;html=1;" value="比喻：Host=厨房，Client=餐厅；&lt;br&gt;Remote=服务员点菜，Session 日志=账本（唯一真相）" vertex="1">
+          <mxGeometry height="50" width="400" x="40" y="430" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="m9ww0hnl-x5ld" name="Agent 回合">
+    <mxGraphModel page="1" grid="1" gridSize="10">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="tt" value="&lt;b&gt;Turn / Step 与 Session 日志&lt;/b&gt;" style="text;fontSize=14;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="220" y="15" width="360" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="u" value="用户 followup / 工具结果" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="55" width="200" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="ts" value="turn/start（ durable ）" style="fillColor=#f8cecc;strokeColor=#b85450;rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="105" width="200" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="ps" value="agent/pre-step 瀑布链&lt;br&gt;接受 / 拒绝 / 改写消息" style="fillColor=#e1d5e7;strokeColor=#9673a6;rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="280" y="155" width="240" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="ss" value="step/start → LLM stream → tool/*" style="fillColor=#f8cecc;strokeColor=#b85450;rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="270" y="215" width="260" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="am" value="assistant/message&lt;br&gt;（嵌入完整 stream）" style="fillColor=#f8cecc;strokeColor=#b85450;rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="270" y="270" width="260" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="te" value="turn/end" style="fillColor=#f8cecc;strokeColor=#b85450;rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="330" width="200" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="dm" value="deriveMessages()&lt;br&gt;→ 下次模型请求" style="rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="385" width="200" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="f1" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;entryX=0.5;entryY=0;endArrow=block;html=1;" edge="1" parent="1" source="u" target="ts">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f2" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;entryX=0.5;entryY=0;endArrow=block;html=1;" edge="1" parent="1" source="ts" target="ps">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f3" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;entryX=0.5;entryY=0;endArrow=block;html=1;" edge="1" parent="1" source="ps" target="ss">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f4" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;entryX=0.5;entryY=0;endArrow=block;html=1;" edge="1" parent="1" source="ss" target="am">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f5" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;entryX=0.5;entryY=0;endArrow=block;html=1;" edge="1" parent="1" source="am" target="te">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f6" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;entryX=0.5;entryY=0;endArrow=block;html=1;" edge="1" parent="1" source="te" target="dm">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="leg1" value="红色 = 写入 Session 日志（可重放）" style="text;align=left;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="120" width="200" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="leg2" value="紫色 = 进程内 agent/* 钩子" style="text;align=left;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="160" width="200" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="leg3" value="assistant-stream = UI 增量；&lt;br&gt;结算后才 durable" style="text;align=left;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="200" width="220" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="loop" value="多 step 循环直到 inbox 空" style="edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;entryX=0;entryY=0.5;dashed=1;html=1;" edge="1" parent="1" source="ss" target="ps">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

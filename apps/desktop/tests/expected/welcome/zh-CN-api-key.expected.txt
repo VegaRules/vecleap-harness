@@ -1,8 +1,10 @@
-DeepSeek Harness
-DeepSeek Harness
+Vecleap
+Vecleap Harness
+欢迎使用 Vecleap
+登录 VecLeap 云端（Hub），或添加自有 API Key 即可开始构建。
 添加一个 API Key 开始使用
-配置 DeepSeek 官方模型，即可开始使用
+保存 API 密钥（VECLEAP_API_KEY）；在环境中设置 VECLEAP_API_BASE_URL 指向你的网关。
 输入 API 密钥 [password]
 保存并继续 [disabled]
-稍后配置
 返回登录
+稍后配置
