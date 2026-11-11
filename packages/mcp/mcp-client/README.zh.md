@@ -70,6 +70,8 @@ kind: "package-reference"
 
 启动后，服务器的工具会以 `mcp__<serverName>__<tool>` 形式出现——试着用一条提示词调用其中一个。如果初始连接失败，harness 仍会启动，但该服务器的工具不会出现，并会记录一条错误。设置 `failOnStartupError: true` 会拒绝插件激活；[app-boot 的启动策略](../../boot/app-boot/README.zh.md)仍允许可选 MCP 配置项失败，而不中止 harness。
 
+Host 组合可以为 Streamable HTTP 提供 `requestCredentials(signal, forceRefresh)`。该回调在每次 HTTP 请求前返回当前账号的请求头，并覆盖静态 `headers`。收到 HTTP 401 后只重试一次，使用 `forceRefresh: true` 和相同请求体；其他状态不刷新。请求必须精确匹配已配置端点，且拒绝重定向。Host 应将客户端挂载在对应 Agent 作用域，并在账号或会话变化时销毁。凭据不会进入工具参数或模型可见结果。
+
 ### 工具命名与共存
 
 模型看到每个工具都带有稳定的服务器限定名称：`mcp__<serverName>__<rawName>`，例如 `mcp__github__create_issue`——与 Claude Code 和 Codex 使用的命名形态相同。只要服务器保持相同的工具名称，名称就保持不变，因此会话历史与权限规则在重启和重载后仍然有效。两个服务器可以同时提供名为 `search` 的工具，分别以 `mcp__github__search` 和 `mcp__web__search` 共存。
