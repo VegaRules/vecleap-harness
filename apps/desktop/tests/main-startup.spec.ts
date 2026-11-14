@@ -555,7 +555,7 @@ describe('desktop main startup', () => {
     await vi.advanceTimersByTimeAsync(0)
     const zh = locale === 'zh-CN'
     expect(harness.dialog.showMessageBox).toHaveBeenLastCalledWith(expect.objectContaining({
-      type: 'info', title: zh ? '关于 Vecleap' : 'About Vecleap', message: 'Vecleap',
+      type: 'info', title: zh ? '关于 VecLeap' : 'About VecLeap', message: 'VecLeap',
       detail: zh ? '版本 V1.0.0' : 'Version V1.0.0', buttons: [zh ? '确定' : 'OK'], cancelId: 0,
     }))
     // A dialog that cannot open is logged, not surfaced as an unhandled rejection.
@@ -897,7 +897,7 @@ describe('desktop main startup', () => {
     window.minimized = true
     window.emit('minimize')
     expect(window.setVibrancy).toHaveBeenLastCalledWith(null)
-    expect(window.setBackgroundColor).toHaveBeenLastCalledWith('#f9fafb')
+    expect(window.setBackgroundColor).toHaveBeenLastCalledWith('#FAFAF8')
     // Restoring re-requests the material and returns to the transparent base.
     window.minimized = false
     window.emit('restore')
@@ -908,7 +908,7 @@ describe('desktop main startup', () => {
     window.visible = false
     window.emit('hide')
     expect(window.setVibrancy).toHaveBeenLastCalledWith(null)
-    expect(window.setBackgroundColor).toHaveBeenLastCalledWith('#1b1b1c')
+    expect(window.setBackgroundColor).toHaveBeenLastCalledWith('#FAFAF8')
     window.visible = true
     window.emit('show')
     expect(window.setBackgroundColor).toHaveBeenLastCalledWith('#00000000')

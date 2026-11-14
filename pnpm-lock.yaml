@@ -626,6 +626,9 @@ importers:
       '@deepseek-ai/dsh-user-approval':
         specifier: workspace:*
         version: link:../../packages/interaction/user-approval
+      '@deepseek-ai/dsh-vecleap-auth-stub':
+        specifier: workspace:*
+        version: link:../../packages/credentials/vecleap-auth-stub
       '@deepseek-ai/dsh-webhook':
         specifier: workspace:*
         version: link:../../packages/experimental/webhook
@@ -901,6 +904,9 @@ importers:
       '@deepseek-ai/dsh-util-values':
         specifier: workspace:*
         version: link:../../packages/util/values
+      '@deepseek-ai/dsh-vecleap-auth-stub':
+        specifier: workspace:*
+        version: link:../../packages/credentials/vecleap-auth-stub
       '@deepseek-ai/dsh-workspace-changes':
         specifier: workspace:*
         version: link:../../packages/deliverables/workspace-changes
@@ -1310,9 +1316,6 @@ importers:
       '@deepseek-ai/dsh-api-terminal-controller':
         specifier: workspace:*
         version: link:../terminal-controller
-      '@deepseek-ai/dsh-api-vecleap-hub-controller':
-        specifier: workspace:*
-        version: link:../vecleap-hub-controller
       '@deepseek-ai/dsh-api-workspace-controller':
         specifier: workspace:*
         version: link:../workspace-controller
@@ -1668,6 +1671,9 @@ importers:
       '@deepseek-ai/dsh-client-connection':
         specifier: workspace:*
         version: link:../../client/connection
+      '@deepseek-ai/dsh-credentials-local':
+        specifier: workspace:*
+        version: link:../../credentials/credentials-local
       '@deepseek-ai/dsh-deepseek-account':
         specifier: workspace:*
         version: link:../../credentials/deepseek-account
@@ -2535,6 +2541,9 @@ importers:
       '@deepseek-ai/dsh-client-ui-vecleap-delivery':
         specifier: workspace:*
         version: link:../../client/ui-vecleap-delivery
+      '@deepseek-ai/dsh-client-ui-vecleap-settings-account':
+        specifier: workspace:*
+        version: link:../../client/ui-vecleap-settings-account
       '@deepseek-ai/dsh-vecleap-auth-stub':
         specifier: workspace:*
         version: link:../../credentials/vecleap-auth-stub
@@ -2578,9 +2587,6 @@ importers:
       '@deepseek-ai/dsh-api-terminal-controller':
         specifier: workspace:*
         version: link:../../api/terminal-controller
-      '@deepseek-ai/dsh-api-vecleap-hub-controller':
-        specifier: workspace:*
-        version: link:../../api/vecleap-hub-controller
       '@deepseek-ai/dsh-api-workspace-controller':
         specifier: workspace:*
         version: link:../../api/workspace-controller
@@ -2761,9 +2767,6 @@ importers:
       '@deepseek-ai/dsh-client-ui-user-questions':
         specifier: workspace:*
         version: link:../../client/ui-user-questions
-      '@deepseek-ai/dsh-client-ui-vecleap-delivery':
-        specifier: workspace:*
-        version: link:../../client/ui-vecleap-delivery
       '@deepseek-ai/dsh-client-ui-workflow-run':
         specifier: workspace:*
         version: link:../../client/ui-workflow-run
@@ -2923,12 +2926,6 @@ importers:
       '@deepseek-ai/dsh-tool-workflow':
         specifier: workspace:*
         version: link:../../workflow/tool-workflow
-      '@deepseek-ai/dsh-vecleap-auth-stub':
-        specifier: workspace:*
-        version: link:../../credentials/vecleap-auth-stub
-      '@deepseek-ai/dsh-vecleap-product':
-        specifier: workspace:*
-        version: link:../vecleap-product
       '@deepseek-ai/dsh-web-frontend':
         specifier: workspace:*
         version: link:../../../apps/web
@@ -6406,6 +6403,48 @@ importers:
         specifier: ^18.2.0
         version: 18.3.1(react@18.3.1)
 
+  packages/client/ui-vecleap-settings-account:
+    devDependencies:
+      '@deepseek-ai/cordis':
+        specifier: workspace:~
+        version: link:../../../vendor/cordis
+      '@deepseek-ai/dsh-api-remotes':
+        specifier: workspace:*
+        version: link:../../api/remotes
+      '@deepseek-ai/dsh-api-vecleap-hub-controller':
+        specifier: workspace:*
+        version: link:../../api/vecleap-hub-controller
+      '@deepseek-ai/dsh-client-locale':
+        specifier: workspace:*
+        version: link:../locale
+      '@deepseek-ai/dsh-client-ui-primitives':
+        specifier: workspace:*
+        version: link:../ui-primitives
+      '@deepseek-ai/dsh-client-ui-renderer':
+        specifier: workspace:*
+        version: link:../ui-renderer
+      '@deepseek-ai/dsh-client-ui-settings':
+        specifier: workspace:*
+        version: link:../ui-settings
+      '@deepseek-ai/dsh-client-ui-slots':
+        specifier: workspace:*
+        version: link:../ui-slots
+      '@deepseek-ai/dsh-deepseek-account':
+        specifier: workspace:*
+        version: link:../../credentials/deepseek-account
+      '@testing-library/react':
+        specifier: ^16.3.3
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
+      react:
+        specifier: ^18.2.0
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.2.0
+        version: 18.3.1(react@18.3.1)
+
   packages/client/ui-workflow-run:
     devDependencies:
       '@deepseek-ai/cordis':
@@ -7395,12 +7434,33 @@ importers:
       '@deepseek-ai/cordis':
         specifier: workspace:~
         version: link:../../../vendor/cordis
+      '@deepseek-ai/dsh-agent':
+        specifier: workspace:*
+        version: link:../../core/agent
+      '@deepseek-ai/dsh-agent-loop':
+        specifier: workspace:*
+        version: link:../../core/agent-loop
+      '@deepseek-ai/dsh-agent-loop-testkit':
+        specifier: workspace:*
+        version: link:../../test-support/agent-loop-testkit
       '@deepseek-ai/dsh-credentials':
         specifier: workspace:*
         version: link:../credentials
+      '@deepseek-ai/dsh-credentials-local':
+        specifier: workspace:*
+        version: link:../credentials-local
       '@deepseek-ai/dsh-deepseek-account':
         specifier: workspace:*
         version: link:../deepseek-account
+      '@deepseek-ai/dsh-llm':
+        specifier: workspace:*
+        version: link:../../llm/llm
+      '@deepseek-ai/dsh-llm-pi-ai':
+        specifier: workspace:*
+        version: link:../../llm/llm-pi-ai
+      '@deepseek-ai/dsh-session':
+        specifier: workspace:*
+        version: link:../../core/session
       typescript:
         specifier: ^6.0.3
         version: 6.0.3

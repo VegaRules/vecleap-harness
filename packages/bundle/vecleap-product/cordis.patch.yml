@@ -1,0 +1,117 @@
+# Vecleap product overrides on dsh-web-app: Hub account login and LLM gateway defaults.
+- id: deepseek-account
+  name: '@deepseek-ai/dsh-deepseek-account-platform'
+  disabled: true
+- insert:
+    - id: deepseek-account
+      name: '@deepseek-ai/dsh-vecleap-auth-stub'
+      config:
+        hubBaseURL: !!js (()=>{const h=process.env.VECLEAP_HUB_URL||'http://hub.vecleap.internal:8900';const ip=(process.env.VECLEAP_HUB_RESOLVE_IP||'47.120.70.241').trim();const u=new URL(h);const t=(()=>{try{return new URL(process.env.VECLEAP_HUB_URL||h).hostname}catch{return'hub.vecleap.internal'}})();if(u.hostname===t||u.hostname==='hub.vecleap.internal')u.hostname=ip;return u.origin.replace(/\/$/,'')})()
+        labBaseURL: !!js (()=>{const h=process.env.VECLEAP_LAB_URL||'http://hub.vecleap.internal:8901';const ip=(process.env.VECLEAP_HUB_RESOLVE_IP||'47.120.70.241').trim();const u=new URL(h);const t=(()=>{try{return new URL(process.env.VECLEAP_HUB_URL||'http://hub.vecleap.internal:8900').hostname}catch{return'hub.vecleap.internal'}})();if(u.hostname===t||u.hostname==='hub.vecleap.internal')u.hostname=ip;return u.origin.replace(/\/$/,'')})()
+        apiKeyEnv: VECLEAP_API_KEY
+- id: llm-deepseek-account
+  disabled: true
+- id: ui-settings-account
+  disabled: true
+- id: ui-settings-models
+  config:
+    credentialOnboarding: false
+- id: desktop-product-telemetry
+  config:
+    scheduledDelayMillis: 30000
+    timeoutMillis: 15000
+    exportTimeoutMillis: 20000
+    shutdownTimeoutMillis: 2000
+    serviceName: vecleap-desktop
+    serviceVersion: !!js process.env.DSH_CLIENT_VERSION
+    endpoint: !!js process.env.DSH_PRODUCT_ANALYTICS_OTLP_URL
+- id: llm-deepseek
+  config:
+    apiKeyEnv: VECLEAP_API_KEY
+    baseURL: !!js (()=>{const custom=process.env.VECLEAP_API_BASE_URL?.trim();if(custom)return custom.replace(/\/+$/,'');const h=process.env.VECLEAP_HUB_URL||'http://hub.vecleap.internal:8900';const ip=(process.env.VECLEAP_HUB_RESOLVE_IP||'47.120.70.241').trim();const u=new URL(h);const t=(()=>{try{return new URL(process.env.VECLEAP_HUB_URL||h).hostname}catch{return'hub.vecleap.internal'}})();if(u.hostname===t||u.hostname==='hub.vecleap.internal')u.hostname=ip;return u.origin.replace(/\/$/,'')+'/api/llm/v1'})()
+    thinking: disabled
+    models:
+      - id: deepseek-flash
+        name: DeepSeek Flash
+        description: VecLeap Hub gateway models (see GET /api/agent/config).
+        contextWindow: 128000
+        maxTokens: 8192
+        inputModalities: [text]
+      - id: deepseek-v4-pro
+        name: DeepSeek V4 Pro
+        contextWindow: 128000
+        maxTokens: 32768
+        inputModalities: [text]
+      - id: qwen3.8-flash
+        name: Qwen 3.8 Flash
+        contextWindow: 128000
+        maxTokens: 8192
+        inputModalities: [text, image]
+      - id: qwen3.8-max
+        name: Qwen 3.8 Max
+        contextWindow: 128000
+        maxTokens: 8192
+        inputModalities: [text, image]
+      - id: glm-5.3
+        name: GLM 5.3
+        contextWindow: 128000
+        maxTokens: 4096
+        inputModalities: [text]
+      - id: glm-5.3-flash
+        name: GLM 5.3 Flash
+        contextWindow: 128000
+        maxTokens: 4096
+        inputModalities: [text, image]
+      - id: kimi-k2-turbo-preview
+        name: Kimi K2 Turbo
+        contextWindow: 128000
+        maxTokens: 16384
+        inputModalities: [text]
+      - id: kimi-latest
+        name: Kimi Latest
+        contextWindow: 128000
+        maxTokens: 8192
+        inputModalities: [text]
+- id: agent-default-model
+  config:
+    provider: openai
+    model: qwen3.8-flash
+- id: llm-pi-ai
+  config:
+    providers:
+      openai:
+        apiKeyEnv: VECLEAP_API_KEY
+        baseURL: !!js (()=>{const custom=process.env.VECLEAP_API_BASE_URL?.trim();if(custom)return custom.replace(/\/+$/,'');const h=process.env.VECLEAP_HUB_URL||'http://hub.vecleap.internal:8900';const ip=(process.env.VECLEAP_HUB_RESOLVE_IP||'47.120.70.241').trim();const u=new URL(h);const t=(()=>{try{return new URL(process.env.VECLEAP_HUB_URL||h).hostname}catch{return'hub.vecleap.internal'}})();if(u.hostname===t||u.hostname==='hub.vecleap.internal')u.hostname=ip;return u.origin.replace(/\/$/,'')+'/api/llm/v1'})()
+        api: openai-completions
+        models:
+          - id: deepseek-flash
+            contextWindow: 128000
+            maxTokens: 8192
+          - id: deepseek-v4-pro
+            contextWindow: 128000
+            maxTokens: 32768
+          - id: qwen3.8-flash
+            contextWindow: 128000
+            maxTokens: 8192
+          - id: qwen3.8-max
+            contextWindow: 128000
+            maxTokens: 8192
+          - id: glm-5.3
+            contextWindow: 128000
+            maxTokens: 4096
+          - id: glm-5.3-flash
+            contextWindow: 128000
+            maxTokens: 4096
+          - id: kimi-k2-turbo-preview
+            contextWindow: 128000
+            maxTokens: 16384
+          - id: kimi-latest
+            contextWindow: 128000
+            maxTokens: 8192
+- insert:
+    - id: vecleap-hub-controller
+      name: '@deepseek-ai/dsh-api-vecleap-hub-controller'
+    - id: ui-vecleap-delivery
+      name: '@deepseek-ai/dsh-client-ui-vecleap-delivery'
+    - id: ui-vecleap-settings-account
+      name: '@deepseek-ai/dsh-client-ui-vecleap-settings-account'

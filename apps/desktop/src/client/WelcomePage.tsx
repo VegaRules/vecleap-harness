@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import type { WelcomeApi } from '../welcome-api.ts'
+import { WelcomeBrand } from './welcome-brand.tsx'
 
 type WelcomeMode = 'hub' | 'apiKey'
 
@@ -158,7 +159,7 @@ export function Welcome({ api }: { api: WelcomeApi }) {
   return <>
     <div className="titlebar" aria-hidden="true" />
     <main className="welcome" aria-labelledby={mode === 'hub' ? 'hub-title' : 'key-title'}>
-      <img className="brand" src="assets/welcome-brand.png" alt={m.welcomeBrand} width="472" height="40" />
+      <WelcomeBrand label={m.welcomeBrand} />
       <div id="tagline" className="tagline">
         <h1 id="welcome-heading"><span>{m.welcomeTaglineBefore}</span><em>{m.welcomeTaglineBrand}</em><span>{m.welcomeTaglineAfter}</span></h1>
         <p id="welcome-description">{m.welcomeDescription}</p>

@@ -20,6 +20,8 @@ it('serves the Web entry and assets without starting or contacting a Host', asyn
   vi.stubGlobal('fetch', fetch)
   const response = await serveWebDocument(new Request('dsh-app://app/'), root)
   const html = await response.text()
+  expect(html.indexOf('id="vecleap-shell"')).toBeGreaterThan(-1)
+  expect(html.indexOf('id="vecleap-shell"')).toBeLessThan(html.indexOf('Promise.withResolvers()'))
   expect(html.indexOf('Promise.withResolvers()')).toBeLessThan(html.indexOf('assets/entry.js'))
   expect(await (await serveWebDocument(new Request('dsh-app://app/assets/entry.js'), root)).text()).toContain('entryLoaded')
   expect(fetch).not.toHaveBeenCalled()

@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url'
 import { app, BrowserWindow, ipcMain, type BrowserWindowConstructorOptions, type IpcMainInvokeEvent } from 'electron'
 import type { DesktopLocale } from './locale.ts'
 import { WELCOME_IPC, type WelcomeOperations } from './welcome-api.ts'
+import { VECLEAP_CANVAS, VECLEAP_CHROME_SYMBOL } from './vecleap-surface.ts'
 
 /**
  * Resolve the fixed-size welcome window's native material and controls.
@@ -24,17 +25,14 @@ export function welcomeWindowOptions(platform: NodeJS.Platform, locale: DesktopL
     fullscreenable: false,
     show: false,
     title: locale.messages.welcomeTitle,
-    backgroundColor: platform === 'darwin' || platform === 'win32' ? '#00000000' : '#FFFFFF',
+    backgroundColor: VECLEAP_CANVAS,
     ...(platform === 'darwin' ? {
       titleBarStyle: 'hidden',
       trafficLightPosition: { x: 21, y: 21 },
-      vibrancy: 'menu',
-      visualEffectState: 'active',
     } as const : {}),
     ...(platform === 'win32' ? {
       titleBarStyle: 'hidden',
-      titleBarOverlay: { color: '#00000000', symbolColor: '#0F1115', height: 42 },
-      backgroundMaterial: 'acrylic',
+      titleBarOverlay: { color: VECLEAP_CANVAS, symbolColor: VECLEAP_CHROME_SYMBOL, height: 42 },
     } as const : {}),
     webPreferences: {
       preload: fileURLToPath(new URL('./preload-welcome.cjs', import.meta.url)),
@@ -128,7 +126,6 @@ export async function openWelcomeWindow(locale: DesktopLocale, operations: Welco
     if (!window.isDestroyed()) window.destroy()
     throw error
   }
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Another window can replace ownership during loadFile.
   if (active && !window.isDestroyed()) {
     window.show()
     void operations.analytics?.('auth_page_view', {})

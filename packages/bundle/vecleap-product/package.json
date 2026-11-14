@@ -1,0 +1,43 @@
+{
+  "name": "@deepseek-ai/dsh-vecleap-product",
+  "description": "Vecleap product bundle: disables Platform account login and configures OpenAI-compatible LLM defaults",
+  "version": "0.2.1-alpha.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/index.js",
+    "cordis.patch.yml",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "dependencies": {
+    "@deepseek-ai/dsh-api-vecleap-hub-controller": "workspace:*",
+    "@deepseek-ai/dsh-client-ui-vecleap-delivery": "workspace:*",
+    "@deepseek-ai/dsh-client-ui-vecleap-settings-account": "workspace:*",
+    "@deepseek-ai/dsh-vecleap-auth-stub": "workspace:*"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "workspace:~"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "workspace:~",
+    "typescript": "^6.0.3"
+  }
+}

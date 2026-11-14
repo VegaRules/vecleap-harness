@@ -34,7 +34,7 @@ describe('DocumentTitle', () => {
     const { sessionId, sessions, props } = titleSources()
     document.title = 'stale title'
     const mounted = render(<DocumentTitle {...props} productTitle="Vecleap" />)
-    expect(document.title).toBe('Vecleap')
+    expect(document.title).toBe('VecLeap')
     act(() => { sessions.update((state) => { state.byId[sessionId]!.title = 'First title' }) })
     expect(document.title).toBe('First title — Vecleap')
     act(() => { sessions.update((state) => { state.byId[sessionId]!.title = 'Revised title' }) })
@@ -46,9 +46,9 @@ describe('DocumentTitle', () => {
         byId: { ...state.byId, [sessionId]: { ...state.byId[sessionId]!, retainedBy: {} } },
       })
     })
-    expect(document.title).toBe('Vecleap')
+    expect(document.title).toBe('VecLeap')
     mounted.unmount()
-    expect(document.title).toBe('Vecleap')
+    expect(document.title).toBe('VecLeap')
   })
 
   it('uses the localized product title supplied by the frame', () => {

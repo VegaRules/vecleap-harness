@@ -1,6 +1,6 @@
-Vecleap
-Vecleap
-Welcome to Vecleap
+VecLeap
+VecLeap
+Welcome to VecLeap
 Build potential. Explore intelligence.
 Sign in
 Add API Key

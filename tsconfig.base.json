@@ -301,6 +301,8 @@
       "@deepseek-ai/dsh-client-ui-schedule/client": ["./packages/client/ui-schedule/src/client/index.ts"],
       "@deepseek-ai/dsh-client-ui-vecleap-delivery": ["./packages/client/ui-vecleap-delivery/src"],
       "@deepseek-ai/dsh-client-ui-vecleap-delivery/client": ["./packages/client/ui-vecleap-delivery/src/client/index.ts"],
+      "@deepseek-ai/dsh-client-ui-vecleap-settings-account": ["./packages/client/ui-vecleap-settings-account/src"],
+      "@deepseek-ai/dsh-client-ui-vecleap-settings-account/client": ["./packages/client/ui-vecleap-settings-account/src/client/index.ts"],
       "@deepseek-ai/dsh-client-ui-plan": ["./packages/client/ui-plan/src"],
       "@deepseek-ai/dsh-client-ui-user-questions": ["./packages/client/ui-user-questions/src"],
       "@deepseek-ai/dsh-client-ui-trajectory": ["./packages/client/ui-trajectory/src"],

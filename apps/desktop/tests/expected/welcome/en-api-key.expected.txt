@@ -1,6 +1,6 @@
-Vecleap
-Vecleap Harness
-Welcome to Vecleap
+VecLeap
+VecLeap
+Welcome to VecLeap
 Sign in to VecLeap Cloud (Hub) or add your own API key to start building.
 Add an API key to get started
 Save your API key (VECLEAP_API_KEY). Set VECLEAP_API_BASE_URL in the environment for your gateway.

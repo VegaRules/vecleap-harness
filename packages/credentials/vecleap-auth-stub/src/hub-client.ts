@@ -6,6 +6,32 @@ export function normalizeBaseURL(base: string): string {
   return base.replace(/\/+$/, '')
 }
 
+import { DEFAULT_HUB_ORIGIN, DEFAULT_HUB_RESOLVE_IP, DEFAULT_RESOLVE_HOST } from './hub-constants.ts'
+
+/**
+ * Map the configured internal Hub host to `VECLEAP_HUB_RESOLVE_IP` (or the mobile default IP)
+ * before Node issues HTTP requests (same idea as mobile Android `HubDns`).
+ */
+export function resolveHubOrigin(baseURL: string): string {
+  const configuredIp = process.env.VECLEAP_HUB_RESOLVE_IP?.trim()
+  const resolveIp = configuredIp !== undefined && configuredIp !== '' ? configuredIp : DEFAULT_HUB_RESOLVE_IP
+  let url: URL
+  try {
+    url = new URL(baseURL)
+  } catch {
+    return baseURL
+  }
+  let targetHost = DEFAULT_RESOLVE_HOST
+  try {
+    targetHost = new URL(process.env.VECLEAP_HUB_URL?.trim() || DEFAULT_HUB_ORIGIN).hostname
+  } catch {
+    /* keep default */
+  }
+  if (url.hostname !== targetHost && url.hostname !== DEFAULT_RESOLVE_HOST) return baseURL
+  url.hostname = resolveIp
+  return normalizeBaseURL(url.toString())
+}
+
 /** OpenAI-compatible LLM gateway base URL for a Hub origin. */
 export function hubLlmBaseURL(hubBaseURL: string): string {
   return `${normalizeBaseURL(hubBaseURL)}/api/llm/v1`
@@ -15,8 +41,12 @@ export function hubLlmBaseURL(hubBaseURL: string): string {
 export function urlUsesHubLlm(hubBaseURL: string, requestUrl: string): boolean {
   try {
     const target = new URL(requestUrl)
-    const llm = new URL(hubLlmBaseURL(hubBaseURL))
-    return target.origin === llm.origin && target.pathname.startsWith(llm.pathname)
+    const paths = new Set([hubBaseURL, resolveHubOrigin(hubBaseURL)])
+    for (const base of paths) {
+      const llm = new URL(hubLlmBaseURL(base))
+      if (target.origin === llm.origin && target.pathname.startsWith(llm.pathname)) return true
+    }
+    return false
   } catch {
     return false
   }
@@ -57,7 +87,7 @@ export async function hubFetch(
   const { json, ...rest } = init
   const body = json === undefined ? (rest.body ?? null) : JSON.stringify(json)
   try {
-    return await fetch(`${normalizeBaseURL(baseURL)}${path}`, {
+    return await fetch(`${resolveHubOrigin(normalizeBaseURL(baseURL))}${path}`, {
       ...rest,
       headers,
       body,
@@ -177,6 +207,41 @@ export async function hubListWorkspaces(session: HubStoredSession, timeoutMs: nu
  * @param workspaceId - workspace id.
  * @param timeoutMs - request deadline.
  */
+/** Subset of `GET /api/agent/config` used to align Desktop models with Mobile. */
+export interface HubAgentConfig {
+  readonly models: string[]
+  readonly recommended_model?: string
+}
+
+/**
+ * @param hubBaseURL - Hub origin.
+ * @param accessToken - Hub access token.
+ * @param timeoutMs - request deadline.
+ */
+export async function hubFetchAgentConfig(
+  hubBaseURL: string,
+  accessToken: string,
+  timeoutMs: number,
+): Promise<HubAgentConfig> {
+  const response = await hubFetch(hubBaseURL, '/api/agent/config', {
+    method: 'GET',
+    headers: { authorization: `Bearer ${accessToken}` },
+  }, timeoutMs)
+  const body: unknown = await response.json().catch(() => ({}))
+  if (!response.ok) {
+    throw new Error(readHubErrorMessage(body as HubErrorBody, `agent config failed (${response.status})`))
+  }
+  const models = (body as { models?: unknown }).models
+  if (!Array.isArray(models) || models.some(item => typeof item !== 'string')) {
+    throw new Error('agent config response missing models')
+  }
+  const recommended = (body as { recommended_model?: unknown }).recommended_model
+  return {
+    models,
+    ...(typeof recommended === 'string' && recommended.length > 0 ? { recommended_model: recommended } : {}),
+  }
+}
+
 export async function labListDatasets(
   session: HubStoredSession,
   labBaseURL: string,

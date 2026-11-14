@@ -13,9 +13,9 @@ const target = resolveDesktopBuildTarget()
 const windows = target === 'win-x64'
 const artifacts = values.unsigned ? paths.unsignedArtifacts : paths.artifacts
 const application = windows ? join(artifacts, 'win-unpacked')
-  : join(artifacts, target === 'mac-arm64' ? 'mac-arm64' : 'mac', 'Vecleap.app', 'Contents')
+  : join(artifacts, target === 'mac-arm64' ? 'mac-arm64' : 'mac', 'VecLeap.app', 'Contents')
 const resources = join(application, windows ? 'resources' : 'Resources')
-const executable = windows ? join(application, 'Vecleap.exe') : join(application, 'MacOS', 'Vecleap')
+const executable = windows ? join(application, 'VecLeap.exe') : join(application, 'MacOS', 'VecLeap')
 const descriptor = await verifyDesktopRuntime(paths.dsh, readDesktopRuntime(paths.dsh).release.version,
   resolveDesktopPackageTarget(target))
 if (windows && !values.unsigned) await verifyWindowsCode(application)

@@ -43,7 +43,7 @@ it('shows the application icon with its name as the tooltip and an Open / Quit m
   const f = setup()
   expect(native.createFromPath).toHaveBeenCalledWith('C:/app/resources/tray.ico')
   expect(f.native.image).toEqual({ path: 'C:/app/resources/tray.ico' })
-  expect(f.native.setToolTip).toHaveBeenCalledWith('Vecleap')
+  expect(f.native.setToolTip).toHaveBeenCalledWith('VecLeap')
   expect(labels(native.menus[0]!)).toEqual(['Open Vecleap', 'separator', 'Quit Vecleap'])
   expect(f.native.setContextMenu).toHaveBeenCalledWith({ template: native.menus[0] })
 })

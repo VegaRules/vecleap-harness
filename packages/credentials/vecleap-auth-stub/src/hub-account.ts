@@ -17,6 +17,7 @@ import {
 import { credentialKey, credentialRef, type CredentialRef } from '@deepseek-ai/dsh-credentials'
 import {
   hubFetch,
+  hubFetchAgentConfig,
   hubFetchProfile,
   hubListWorkspaces,
   hubLoginWithPassword,
@@ -29,8 +30,8 @@ import {
 import type { HubDataset, HubStoredSession, HubWorkspace } from './hub-types.ts'
 
 const SESSION_KEY = credentialKey('vecleap-hub', 'session')
-const DEFAULT_HUB = 'http://47.120.70.241:8900'
-const DEFAULT_LAB = 'http://47.120.70.241:8901'
+const DEFAULT_HUB = 'http://hub.vecleap.internal:8900'
+const DEFAULT_LAB = 'http://hub.vecleap.internal:8901'
 
 const storedSessionSchema = z.object({
   version: z.literal(1),
@@ -69,9 +70,20 @@ export const Config = Schema.object({
   requestTimeoutMs: Schema.number().min(1).max(120_000).default(30_000),
 })
 
+/** Desktop main only allows HTTPS or loopback HTTP when opening account links. */
+function isDesktopSafeBrowserUrl(href: string): boolean {
+  const url = new URL(href)
+  const loopback = ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)
+  return !(url.username || url.password) && (url.protocol === 'https:' || (loopback && url.protocol === 'http:'))
+}
+
 function accountLinks(hubBaseURL: string): AccountView['links'] {
   const base = normalizeBaseURL(hubBaseURL)
-  return { usageUrl: `${base}/`, topUpUrl: `${base}/` }
+  const direct = { usageUrl: `${base}/`, topUpUrl: `${base}/` }
+  if (isDesktopSafeBrowserUrl(direct.usageUrl)) return direct
+  // Hub is often plain HTTP on a LAN IP; API traffic still uses hubBaseURL — these links are unused in VecLeap UI.
+  const placeholder = 'https://127.0.0.1/vecleap-account-links-placeholder'
+  return { usageUrl: placeholder, topUpUrl: placeholder }
 }
 
 function signedOutView(hubBaseURL: string): AccountView {
@@ -108,6 +120,7 @@ export default class VecleapHubAccount extends DeepSeekAccount {
     this.apiKeyRef = credentialRef(resolved.apiKeyEnv)
     this.requestTimeoutMs = resolved.requestTimeoutMs
     void this.syncLlmCredentialFromSession()
+    void this.syncModelsFromHub()
   }
 
   /** @returns Hub and Lab origins configured for this Host. */
@@ -301,6 +314,7 @@ export default class VecleapHubAccount extends DeepSeekAccount {
     }))
     await this.ctx.credentials.set(this.apiKeyRef, session.tokens.access_token)
     this.notifyWatch(storedView(this.hubBaseURL))
+    await this.syncModelsFromHub()
   }
 
   private async clearSession(): Promise<void> {
@@ -320,6 +334,35 @@ export default class VecleapHubAccount extends DeepSeekAccount {
     const session = await this.readSession()
     if (session === undefined) return
     await this.ctx.credentials.set(this.apiKeyRef, session.tokens.access_token)
+    await this.syncModelsFromHub()
+  }
+
+  /** Align default model with Hub catalog (same source as Mobile `GET /api/agent/config`). */
+  private async syncModelsFromHub(): Promise<void> {
+    const session = await this.readSession()
+    if (session === undefined) return
+    const agentDefaultModel = this.ctx.get('agentDefaultModel')
+    if (agentDefaultModel === undefined) return
+    try {
+      const fresh = await this.sessionWithFreshAccessToken()
+      if (fresh === undefined) return
+      const config = await hubFetchAgentConfig(
+        this.hubBaseURL,
+        fresh.tokens.access_token,
+        this.requestTimeoutMs,
+      )
+      if (config.models.length === 0) return
+      const firstModel = config.models[0]
+      if (firstModel === undefined) return
+      const recommended = config.recommended_model ?? firstModel
+      const current = agentDefaultModel.currentSelection()
+      const legacyAliases = new Set(['deepseek-chat', 'deepseek-reasoner', 'qwen-turbo'])
+      if (!config.models.includes(current.model) || legacyAliases.has(current.model)) {
+        await agentDefaultModel.saveSelection({ provider: current.provider || 'openai', model: recommended })
+      }
+    } catch (error) {
+      this.ctx.logger.warn('vecleap-hub: could not sync models from /api/agent/config', error)
+    }
   }
 
   private async sessionWithFreshAccessToken(): Promise<HubStoredSession | undefined> {

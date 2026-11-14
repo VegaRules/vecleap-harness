@@ -40,14 +40,17 @@ function assertSupportedTarget(target) {
  * @param {'mac-arm64' | 'mac-x64' | 'win-x64'} target - Supported Desktop target name.
  * @returns {{ root: string, artifacts: string, unsignedArtifacts: string, runtime: string, packageSet: string, dsh: string, dshPnpm: string, electron: string, packedDsh: string, packedVendor: string, packedLandlock: string, downloads: string }} Target paths plus the shared immutable download cache.
  */
-export function desktopTargetBuildPaths(target) {
+export function desktopTargetBuildPaths(target, env = process.env) {
   assertSupportedTarget(target)
   const root = join(BUILD_ROOT, 'targets', target)
   const packed = join(root, 'packed')
+  const unsignedArtifacts = env.DSH_DESKTOP_UNSIGNED_ARTIFACTS_DIR !== undefined && env.DSH_DESKTOP_UNSIGNED_ARTIFACTS_DIR !== ''
+    ? resolve(env.DSH_DESKTOP_UNSIGNED_ARTIFACTS_DIR)
+    : join(root, 'unsigned-artifacts')
   return {
     root,
     artifacts: join(root, 'artifacts'),
-    unsignedArtifacts: join(root, 'unsigned-artifacts'),
+    unsignedArtifacts,
     runtime: join(root, 'runtime'),
     packageSet: join(root, 'package-set'),
     dsh: join(root, 'dsh'),
@@ -86,7 +89,7 @@ export function resolveDesktopTargetBuildPaths(
   hostPlatform = process.platform,
   hostArch = process.arch,
 ) {
-  return desktopTargetBuildPaths(resolveDesktopBuildTarget(env, hostPlatform, hostArch))
+  return desktopTargetBuildPaths(resolveDesktopBuildTarget(env, hostPlatform, hostArch), env)
 }
 
 /**

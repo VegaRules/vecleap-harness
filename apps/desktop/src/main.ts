@@ -1,5 +1,6 @@
 import type { ProductEventMap, ProductEvent } from '@deepseek-ai/dsh-client-product-analytics/types'
 import { WINDOWS_TITLEBAR_HEIGHT } from './windows-layout.ts'
+import { VECLEAP_CANVAS, VECLEAP_CHROME_SYMBOL } from './vecleap-surface.ts'
 /** Electron shell: desktop project ownership, custom protocol, windows, and lifecycle. */
 
 import { readFile, writeFile } from 'node:fs/promises'
@@ -180,14 +181,13 @@ function developmentHostInspectPort(enabled: boolean): number | undefined {
 }
 
 /**
- * Opaque chrome fallback matching the built-in sidebar palette (the resolved
- * `--dsw-static-neutral-bluish-900` / `-50` tokens). An approximation for
- * custom themes: Windows swaps in the renderer's measured palette over the
- * windowsAppearance IPC, and macOS shows it only while minimized or hidden.
- * @returns the sidebar fill hex for the active system color scheme.
+ * Opaque chrome fallback for the VecLeap product canvas. Windows replaces it
+ * with the renderer's measured sidebar fill, and macOS shows it only while
+ * the window is minimized or hidden.
+ * @returns the product canvas hex.
  */
 function chromeFallbackFill(): string {
-  return nativeTheme.shouldUseDarkColors ? '#1b1b1c' : '#f9fafb'
+  return VECLEAP_CANVAS
 }
 
 /**
@@ -224,8 +224,9 @@ function createWindow(preload: string, show = false, primary = false): BrowserWi
     show,
     ...(process.platform === 'win32' && primary ? {
       titleBarStyle: 'hidden' as const,
+      backgroundColor: VECLEAP_CANVAS,
       titleBarOverlay: { height: WINDOWS_TITLEBAR_HEIGHT, color: chromeFallbackFill(),
-        symbolColor: nativeTheme.shouldUseDarkColors ? '#f9fafb' : '#0f1115' },
+        symbolColor: VECLEAP_CHROME_SYMBOL },
     } : {}),
     // hiddenInset places traffic lights inside the sidebar; sidebar vibrancy
     // needs a transparent window background to show through the page.
@@ -663,7 +664,6 @@ async function main(): Promise<void> {
     // A confirmation on a hidden window would go unseen, so it waits for the next show; the mandatory
     // flow keeps its own taskbar and Dock attention instead.
     if (!isMandatory()) await windowShown()
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- A quit can begin while the show is awaited.
     if (quitting) return state
     return updates.install(version)
   }
@@ -942,7 +942,7 @@ async function main(): Promise<void> {
   const applicationIconPath = development ? join(app.getAppPath(), 'resources', 'icon-windows.png')
     : join(process.resourcesPath, 'icon.png')
   app.setAboutPanelOptions({
-    applicationName: 'Vecleap',
+    applicationName: 'VecLeap',
     applicationVersion: app.getVersion(),
     // The release has no separate build number; omit Electron's bundle version.
     version: '',

@@ -38,7 +38,9 @@ function mount(language = 'zh-CN') {
     const heading = document.querySelector('main')!.getAttribute('aria-labelledby')!
     const keyInput = input()
     return [
-      document.title, document.querySelector('img')!.alt, document.getElementById('welcome-heading')!.textContent,
+      document.title,
+      document.querySelector('.brand-lockup')?.getAttribute('aria-label') ?? document.querySelector('img')?.getAttribute('alt') ?? '',
+      document.getElementById('welcome-heading')!.textContent,
       document.querySelector('#welcome-description')!.textContent,
       document.getElementById(heading)!.textContent,
       document.querySelector('#key-description')!.textContent, `${keyInput.placeholder} [password]`,
@@ -54,7 +56,9 @@ describe('desktop welcome presentation', () => {
   it.each(['zh-CN', 'en'])('renders the %s API-key onboarding step', async (language) => {
     const view = mount(language)
     expect(view.document.documentElement.lang).toBe(language)
-    expect(view.document.querySelector('img')!.getAttribute('src')).toBe('assets/welcome-brand.png')
+    const mark = view.document.querySelector('.brand-mark') as HTMLImageElement
+    expect(mark.getAttribute('src')).toMatch(/^data:image\/png/u)
+    expect(view.document.querySelector('.brand-word')!.textContent).toBe('VecLeap')
     view.switchToApiKey()
     expect(view.input().type).toBe('password')
     await expect(view.copy()).toMatchFileSnapshot(`./expected/welcome/${language}-api-key.expected.txt`)

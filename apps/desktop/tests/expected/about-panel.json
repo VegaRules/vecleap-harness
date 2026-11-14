@@ -1,7 +1,7 @@
 {
   "darwin:en-US": {
     "menu": [
-      { "label": "About Vecleap", "role": "about" },
+      { "label": "About VecLeap", "role": "about" },
       { "type": "separator" }
     ],
     "options": {
@@ -40,7 +40,7 @@
   },
   "win32:en-US": {
     "menu": [
-      { "label": "About Vecleap" },
+      { "label": "About VecLeap" },
       { "type": "separator" }
     ],
     "options": {

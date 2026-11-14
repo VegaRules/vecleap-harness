@@ -33,6 +33,8 @@ const PROJECT_NAME = '@deepseek-ai/dsh-desktop-runtime'
 const DSH_PACKAGE = '@deepseek-ai/dsh'
 const CORE_BUILD_PACKAGE = '@deepseek-ai/dsh-subprocess-local'
 const WEB_PROFILE = PROFILE_TEMPLATES.web as ProfileTemplate
+/** Shipped Desktop profile bundles: Web surface plus VecLeap product overlay (Hub, delivery, branding). */
+const DESKTOP_PROFILE_BUNDLES = [...WEB_PROFILE.bundles, VECLEAP_PRODUCT_BUNDLE] as const
 const WORKSPACE_SETTINGS = 'nodeLinker: hoisted\nautoInstallPeers: false\n'
 function writeJson(path: string, value: unknown): void {
   writeFileSync(path, `${JSON.stringify(value, undefined, 2)}\n`, { mode: 0o600 })
@@ -153,7 +155,7 @@ export function createRuntimeProjectMetadata(projectDir: string, release: Deskto
     private: true,
     version: '0.0.0',
     dependencies: desktopCorePackageOverrides(packageSet),
-    dsh: { profile: { bundles: [...WEB_PROFILE.bundles] } },
+    dsh: { profile: { bundles: [...DESKTOP_PROFILE_BUNDLES] } },
   }
   writeJson(join(projectDir, 'package.json'), manifest)
   writeFileSync(
@@ -178,7 +180,7 @@ export function createDevelopmentProjectMetadata(projectDir: string, release: De
       [DSH_PACKAGE]: release.version,
       [DESKTOP_HOST_PACKAGE]: release.version,
     },
-    dsh: { profile: { bundles: [...WEB_PROFILE.bundles] } },
+    dsh: { profile: { bundles: [...DESKTOP_PROFILE_BUNDLES] } },
   }
   writeJson(join(projectDir, 'package.json'), manifest)
   writeFileSync(join(projectDir, 'pnpm-workspace.yaml'), workspaceFile(), { mode: 0o600 })
@@ -186,5 +188,5 @@ export function createDevelopmentProjectMetadata(projectDir: string, release: De
 
 /** Create the first external plugin profile without running a package manager. */
 export function createPluginProfile(projectDir: string): void {
-  initProfile(projectDir, WEB_PROFILE.bundles)
+  initProfile(projectDir, [...DESKTOP_PROFILE_BUNDLES])
 }

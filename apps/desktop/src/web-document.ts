@@ -1,6 +1,7 @@
 /** Local Web document and authenticated HTTP forwarding for the application window. */
 import { readFile } from 'node:fs/promises'
 import { extname, resolve, sep } from 'node:path'
+import { VECLEAP_SURFACE_STYLE } from './vecleap-surface.ts'
 
 const MIME: Readonly<Record<string, string>> = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
@@ -29,7 +30,7 @@ export async function serveWebDocument(request: Request, root: string): Promise<
     throw error
   }
   const content = pathname === '/' || pathname === '/index.html'
-    ? body.toString().replace('<head>', '<head>' + BOOT) : new Uint8Array(body)
+    ? body.toString().replace('<head>', '<head>' + VECLEAP_SURFACE_STYLE + BOOT) : new Uint8Array(body)
   return new Response(request.method === 'HEAD' ? null : content, {
     headers: { 'content-type': MIME[extname(target)] ?? 'application/octet-stream' },
   })

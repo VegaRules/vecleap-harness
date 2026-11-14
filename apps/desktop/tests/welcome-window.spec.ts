@@ -1,6 +1,7 @@
 import { join } from 'node:path'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { resolveDesktopLocale } from '../src/locale.ts'
+import { VECLEAP_CANVAS, VECLEAP_CHROME_SYMBOL } from '../src/vecleap-surface.ts'
 import { needsWelcome, WELCOME_IPC } from '../src/welcome-api.ts'
 
 const electron = vi.hoisted(() => ({
@@ -62,17 +63,13 @@ describe('desktop welcome window', () => {
       },
     })
     expect(options.webPreferences?.preload).toMatch(/preload-welcome\.cjs$/u)
+    expect(options.backgroundColor).toBe(VECLEAP_CANVAS)
+    expect(options.vibrancy).toBeUndefined()
+    expect(options.backgroundMaterial).toBeUndefined()
     if (platform === 'darwin') {
-      expect(options.vibrancy).toBe('menu')
-      expect(options.visualEffectState).toBe('active')
       expect(options.trafficLightPosition).toEqual({ x: 21, y: 21 })
     } else if (platform === 'win32') {
-      expect(options.backgroundMaterial).toBe('acrylic')
-      expect(options.titleBarOverlay).toMatchObject({ height: 42 })
-    } else {
-      expect(options.backgroundColor).toBe('#FFFFFF')
-      expect(options.vibrancy).toBeUndefined()
-      expect(options.backgroundMaterial).toBeUndefined()
+      expect(options.titleBarOverlay).toMatchObject({ color: VECLEAP_CANVAS, symbolColor: VECLEAP_CHROME_SYMBOL, height: 42 })
     }
   })
 
