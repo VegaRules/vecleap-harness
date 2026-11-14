@@ -70,6 +70,8 @@ The generated [configuration catalog](../../../docs/config-catalog.md#deepseek-a
 
 After startup, the server's tools appear as `mcp__<serverName>__<tool>` — try a prompt that uses one. If the initial connection fails, the harness still starts but no tools from that server appear, and an error is logged. Setting `failOnStartupError: true` rejects plugin activation; [app-boot's startup policy](../../boot/app-boot/README.md) still permits an optional MCP entry to fail without aborting the harness.
 
+Host compositions may supply `requestCredentials(signal, forceRefresh)` for Streamable HTTP. It returns request headers for the current account and runs before every HTTP request; returned headers override static `headers`. One HTTP 401 triggers one retry with `forceRefresh: true` and the same body. Other statuses do not refresh. Requests must target the configured endpoint exactly, and redirects are refused. The owning Host must mount the client in the intended Agent scope and dispose it on account or session changes. Credentials never enter tool arguments or model-visible results.
+
 ### Tool naming and coexistence
 
 The model sees each tool under a stable server-qualified name: `mcp__<serverName>__<rawName>`, for example `mcp__github__create_issue` — the same naming shape Claude Code and Codex use. Names stay stable while the server keeps the same tool name, so session history and permission rules survive restarts and reloads. Two servers can both offer a tool named `search` and coexist as `mcp__github__search` and `mcp__web__search`.

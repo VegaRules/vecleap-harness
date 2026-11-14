@@ -11,6 +11,7 @@ import { StdioClientTransport } from '@modelcontextprotocol/client/stdio'
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/client'
 import { scrubbedParentEnv } from '@deepseek-ai/dsh-subprocess'
 import type { Config } from './index.ts'
+import { createCredentialFetch } from './http-credentials.ts'
 
 /**
  * The subprocess seam's scrubbed parent env (credential-shaped and stale
@@ -40,7 +41,12 @@ export function createTransport(config: Config): Transport {
     case 'streamable-http':
       return new StreamableHTTPClientTransport(
         new URL(config.url),
-        { requestInit: { headers: config.headers } },
+        {
+          requestInit: { headers: config.headers },
+          ...(config.requestCredentials === undefined ? {} : {
+            fetch: createCredentialFetch(config.url, config.requestCredentials),
+          }),
+        },
       )
   }
 }
