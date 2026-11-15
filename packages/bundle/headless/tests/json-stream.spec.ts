@@ -1,6 +1,7 @@
 /** The `--json` run projection: commit-point emission, ordering, bounding, and disposal. */
 
 import { describe, expect, it } from 'vitest'
+import type { ToolDefinition } from '@deepseek-ai/dsh-tools'
 import type { Context } from '@deepseek-ai/cordis'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import type { Session, SessionEvent } from '@deepseek-ai/dsh-session'
@@ -69,10 +70,12 @@ function harness(
   options: JsonProjectionOptions = {},
   agentId = 'session-1',
   cwd: string | null = '/',
+  tool?: Pick<ToolDefinition, 'presentCall' | 'presentResult'>,
 ): ProjectionHarness {
   const lines: string[] = []
   const sessionListeners = new Set<(session: unknown, event: SessionEvent) => void>()
   const ctx = {
+    get() { return tool === undefined ? undefined : { get: () => tool } },
     on(name: string, handler: unknown) {
       if (name === 'session/event') sessionListeners.add(handler as never)
       return () => { sessionListeners.delete(handler as never) }
@@ -95,6 +98,29 @@ function harness(
 }
 
 describe('--json projection', () => {
+  it('projects nested PTC dispatches with their actual parent identity', () => {
+    const test = harness()
+    test.emitSession({ type: 'tool/ptc-dispatch-start', data: { rootCallId: 'root', parentCallId: 'root', subCallId: 'child', name: 'read', arguments: { path: 'a' } } } as SessionEvent)
+    test.emitSession({ type: 'tool/ptc-dispatch', data: { rootCallId: 'root', parentCallId: 'root', subCallId: 'child', name: 'read', arguments: { path: 'a' }, content: [{ type: 'text', text: 'contents' }], isError: false } } as SessionEvent)
+    expect(test.parsed()[1]).toMatchObject({ type: 'tool_call', callId: 'child', parentCallId: 'root', tool: 'read' })
+    expect(test.parsed()[2]).toMatchObject({ type: 'tool_result', callId: 'child', parentCallId: 'root', result: 'contents' })
+  })
+
+  it('projects actual tool presenters from committed call arguments and result metadata', () => {
+    const test = harness({}, 's1', '/', {
+      presentCall: () => ({ card: 'terminal', title: 'Run checks' }),
+      presentResult: (_args, result) => ({ card: 'terminal', title: 'Checks', output: JSON.stringify(result.meta) }),
+    })
+    test.emitSession({ type: 'tool/call', data: { turn: 1, step: 1, callId: 'c', name: 'custom', arguments: '{"cmd":"check"}' } } as SessionEvent)
+    const result = toolResult('c', [{ type: 'text', text: 'raw output' }])
+    if (result.type !== 'tool/result') throw new Error('expected tool result fixture')
+    result.data.meta = { exitCode: 0 }
+    test.emitSession(result)
+    expect(test.parsed()[1]?.presentation).toEqual({ card: 'terminal', title: 'Run checks' })
+    expect(test.parsed()[2]?.presentation).toEqual({ card: 'terminal', title: 'Checks', output: '{"exitCode":0}' })
+    expect(test.parsed()[2]?.result).toBe('raw output')
+  })
+
   it('opens with the session event before any observed event', () => {
     const test = harness()
     expect(test.parsed()).toEqual([{ type: 'session', sessionId: 'session-1', cwd: '/' }])
