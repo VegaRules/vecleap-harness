@@ -1,0 +1,23 @@
+.root {
+  box-sizing: border-box;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px 20px 40px;
+}
+
+.header {
+  margin-bottom: 20px;
+}
+
+.title {
+  margin: 0 0 8px;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.lead {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  opacity: 0.8;
+}

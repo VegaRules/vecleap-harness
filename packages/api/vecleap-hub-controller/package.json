@@ -66,12 +66,15 @@
   "license": "MIT",
   "dependencies": {
     "@deepseek-ai/dsh-typert-protocol": "workspace:*",
+    "@deepseek-ai/dsh-session": "workspace:*",
+    "@deepseek-ai/dsh-vecleap-hub-session-sync": "workspace:*",
     "zod": "^4.4.3"
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "workspace:~",
     "@deepseek-ai/dsh-deepseek-account": "workspace:*",
-    "@deepseek-ai/dsh-vecleap-auth-stub": "workspace:*"
+    "@deepseek-ai/dsh-vecleap-auth-stub": "workspace:*",
+    "@deepseek-ai/dsh-vecleap-hub-session-sync": "workspace:*"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "workspace:~",
@@ -79,6 +82,7 @@
     "@deepseek-ai/dsh-client-connection": "workspace:*",
     "@deepseek-ai/dsh-credentials-local": "workspace:*",
     "@deepseek-ai/dsh-deepseek-account": "workspace:*",
-    "@deepseek-ai/dsh-vecleap-auth-stub": "workspace:*"
+    "@deepseek-ai/dsh-vecleap-auth-stub": "workspace:*",
+    "@deepseek-ai/dsh-vecleap-hub-session-sync": "workspace:*"
   }
 }

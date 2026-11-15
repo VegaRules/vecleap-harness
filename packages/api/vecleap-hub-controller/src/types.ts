@@ -31,3 +31,19 @@ export interface HubDataset {
   readonly name: string
   readonly description?: string
 }
+
+/** Row from Hub `GET /api/sync/sessions` (shared with Web/Mobile). */
+export interface HubChatSessionSummary {
+  readonly session_id: string
+  readonly title: string
+  readonly last_seq: number
+  readonly updated_at: number
+}
+
+/** Simplified transcript row for settings preview. */
+export interface HubChatMessage {
+  readonly role: 'user' | 'assistant'
+  readonly content: string
+  readonly created_at: number
+  readonly model?: string
+}

@@ -1,9 +1,9 @@
 VecLeap
 VecLeap
 Welcome to VecLeap
-Sign in to VecLeap Cloud (Hub) or add your own API key to start building.
+Sign in with your VecLeap Cloud account, or add your own API key to get started.
 Add an API key to get started
-Save your API key (VECLEAP_API_KEY). Set VECLEAP_API_BASE_URL in the environment for your gateway.
+Enter an API key from your model provider or gateway.
 Enter API key [password]
 Save and continue [disabled]
 Back to sign in

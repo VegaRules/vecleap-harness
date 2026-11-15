@@ -3,6 +3,7 @@
 import { spawn } from 'node:child_process'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { DESKTOP_CLI_SYMLINK_DARWIN, desktopCliLauncherFilename } from './cli-launcher.ts'
 import { CommandInstallationError, inspectFileCommand, installFileCommand, removeFileCommand } from './command-installation.ts'
 
 const [operation, expected] = process.argv.slice(2)
@@ -15,7 +16,8 @@ try {
   if (!['inspect', 'install', 'remove'].includes(operation ?? '')) throw new CommandInstallationError('EINVAL', 'Invalid command-management operation.')
   if (operation !== 'inspect' && !/^[a-f0-9]{64}$/u.test(fingerprint)) throw new CommandInstallationError('EINVAL', 'Missing command confirmation.')
   if (process.platform === 'darwin') {
-    const options = { destination: '/usr/local/bin/dsh', launcher: join(resources, 'runtime', 'cli', 'bin', 'dsh'),
+    const options = { destination: DESKTOP_CLI_SYMLINK_DARWIN,
+      launcher: join(resources, 'runtime', 'cli', 'bin', desktopCliLauncherFilename('darwin')),
       linkHelper: join(resources, 'runtime', 'cli', 'link-entry') }
     const state = operation === 'inspect' ? await inspectFileCommand(options)
       : operation === 'install' ? await installFileCommand(options, fingerprint) : await removeFileCommand(options, fingerprint)

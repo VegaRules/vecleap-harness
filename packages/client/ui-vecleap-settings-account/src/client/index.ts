@@ -3,11 +3,15 @@
  */
 import type { Context as ClientContext } from '@deepseek-ai/cordis'
 import type { AccountView } from '@deepseek-ai/dsh-deepseek-account/types'
-import type {} from '@deepseek-ai/dsh-api-remotes/client'
+import type { RemoteResult } from '@deepseek-ai/dsh-api-remotes/client'
 import type {} from '@deepseek-ai/dsh-api-vecleap-hub-controller/client'
 import type {} from '@deepseek-ai/dsh-client-locale/client'
 import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
+import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client'
+import type { MainPanelId } from '@deepseek-ai/dsh-client-ui-layout/client' // layout slot types
+import { CloudSyncPanel } from './CloudSyncPanel.tsx'
+import { CloudSyncPanelIcon } from './CloudSyncPanelIcon.tsx'
 import { HubAccountMenu } from './HubAccountMenu.tsx'
 import { HubAccountSection } from './HubAccountSection.tsx'
 import { en, NS, zh, type VecleapAccountKey } from './locales.ts'
@@ -17,6 +21,17 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
   interface LocaleNamespaceMap {
     'vecleap.account': VecleapAccountKey
   }
+}
+
+const CLOUD_PANEL_ID = 'vecleap-cloud' as MainPanelId
+
+function unwrapRemote<T>(result: T | RemoteResult<T>): T {
+  if (typeof result === 'object' && result !== null && 'ok' in result) {
+    const envelope = result as RemoteResult<T>
+    if (!envelope.ok) throw envelope.error
+    return envelope.value
+  }
+  return result
 }
 
 export const inject = ['slots', 'locale', 'remote', 'remote.account', 'remote.vecleapHub']
@@ -99,6 +114,8 @@ export function apply(ctx: ClientContext): void {
       const result = await ctx.remote.account.signOut(client())
       if (!result.ok) throw result.error
     },
+    listChatSessions: async () => unwrapRemote(await ctx.remote.vecleapHub.listChatSessions()),
+    loadChatSession: async id => unwrapRemote(await ctx.remote.vecleapHub.loadChatSession(id)),
   }
 
   ctx.slots.inject('settings.launcher', () => ctx.slots.register({
@@ -113,6 +130,50 @@ export function apply(ctx: ClientContext): void {
           name: 'settings.section', id: 'vecleap-account', order: -10, label: () => t('nav'),
           locale: NS, inject: () => operations,
         }, HubAccountSection)
+      } else {
+        unregister?.()
+        unregister = undefined
+      }
+    }
+    listeners.add(update)
+    update()
+    return () => { listeners.delete(update); unregister?.() }
+  })
+
+  ctx.slots.inject('main', () => {
+    let unregister: (() => void) | undefined
+    const update = () => {
+      if (snapshot.view?.status === 'credential-stored') {
+        unregister ??= ctx.slots.register({
+          name: 'main',
+          key: CLOUD_PANEL_ID,
+          locale: NS,
+          inject: () => ({
+            listChatSessions: operations.listChatSessions,
+            loadChatSession: operations.loadChatSession,
+          }),
+        }, CloudSyncPanel)
+      } else {
+        unregister?.()
+        unregister = undefined
+      }
+    }
+    listeners.add(update)
+    update()
+    return () => { listeners.delete(update); unregister?.() }
+  })
+
+  ctx.slots.inject('sidebar.panellist', () => {
+    let unregister: (() => void) | undefined
+    const update = () => {
+      if (snapshot.view?.status === 'credential-stored') {
+        unregister ??= ctx.slots.register({
+          name: 'sidebar.panellist',
+          id: CLOUD_PANEL_ID,
+          order: 3,
+          locale: NS,
+          label: () => t('cloudPanel'),
+        }, CloudSyncPanelIcon)
       } else {
         unregister?.()
         unregister = undefined

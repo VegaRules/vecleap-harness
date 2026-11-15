@@ -7,6 +7,7 @@ import { LocalCredentialProvider } from '@deepseek-ai/dsh-credentials-local'
 import VecleapHubAccount from '@deepseek-ai/dsh-vecleap-auth-stub'
 import {
   startVecleapHubMock,
+  VECLEAP_MOCK_ACCESS,
   VECLEAP_MOCK_EMAIL,
   VECLEAP_MOCK_PASSWORD,
   type VecleapHubMock,
@@ -63,5 +64,24 @@ describe('VecleapHubController Remote facade', () => {
       'wrong-password',
     )
     expect(badLogin.ok).toBe(false)
+
+    const sessionsBefore = await context.vecleapHubController.listChatSessions()
+    expect(sessionsBefore).toEqual([])
+
+    const seeded = await fetch(`${mock!.hubOrigin}/api/sync/sessions/test-session/events`, {
+      method: 'PUT',
+      headers: {
+        authorization: `Bearer ${VECLEAP_MOCK_ACCESS}`,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        title: 'web-task',
+        events: [{ seq: 0, data: { type: 'message', role: 'user', content: 'hello', created_at: Date.now(), mode: 'agent' } }],
+      }),
+    })
+    expect(seeded.ok).toBe(true)
+
+    const sessionsAfter = await context.vecleapHubController.listChatSessions()
+    expect(sessionsAfter.map(row => row.title)).toContain('web-task')
   })
 })

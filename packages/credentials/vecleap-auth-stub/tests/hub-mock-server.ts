@@ -102,6 +102,8 @@ export async function startVecleapHubMock(options: VecleapHubMockOptions = {}): 
   let loginAttempts = 0
   let refreshAttempts = 0
   const servers: Server[] = []
+  type SyncRow = { title: string; last_seq: number; updated_at: number; events: { seq: number; data: unknown }[] }
+  const syncSessions = new Map<string, SyncRow>()
 
   const llmEvents = [
     '{"choices":[{"delta":{"role":"assistant","content":""},"index":0,"finish_reason":null}]}',
@@ -154,6 +156,73 @@ export async function startVecleapHubMock(options: VecleapHubMockOptions = {}): 
       }
       json(response, 200, { workspaces: MOCK_WORKSPACES })
       return
+    }
+    if (request.method === 'GET' && path === '/api/sync/sessions') {
+      if (!bearerAuthorized(request)) {
+        json(response, 401, { error: 'unauthorized' })
+        return
+      }
+      const sessions = [...syncSessions.entries()].map(([session_id, row]) => ({
+        session_id,
+        title: row.title,
+        last_seq: row.last_seq,
+        updated_at: row.updated_at,
+      }))
+      json(response, 200, { sessions })
+      return
+    }
+    const syncMatch = path.match(/^\/api\/sync\/sessions\/([^/]+)(?:\/events)?$/u)
+    if (syncMatch !== null) {
+      if (!bearerAuthorized(request)) {
+        json(response, 401, { error: 'unauthorized' })
+        return
+      }
+      const sessionId = decodeURIComponent(syncMatch[1]!)
+      const row = syncSessions.get(sessionId) ?? {
+        title: 'Agent',
+        last_seq: 0,
+        updated_at: Math.floor(Date.now() / 1000),
+        events: [],
+      }
+      if (request.method === 'PUT' && path.endsWith('/events')) {
+        const raw = await readBody(request)
+        const body = raw === '' ? {} : JSON.parse(raw) as { events?: { seq: number; data: unknown }[]; title?: string }
+        const incoming = Array.isArray(body.events) ? body.events : []
+        const existingSeqs = new Set(row.events.map(event => event.seq))
+        for (const event of incoming) {
+          if (existingSeqs.has(event.seq)) {
+            json(response, 409, { error: 'conflict', last_seq: row.last_seq })
+            return
+          }
+          row.events.push(event)
+          row.last_seq = Math.max(row.last_seq, event.seq)
+        }
+        if (typeof body.title === 'string' && body.title.length > 0) row.title = body.title
+        row.updated_at = Math.floor(Date.now() / 1000)
+        syncSessions.set(sessionId, row)
+        json(response, 200, { last_seq: row.last_seq })
+        return
+      }
+      if (request.method === 'GET') {
+        const fromSeq = Number(url.searchParams.get('from_seq') ?? '0')
+        const limit = Number(url.searchParams.get('limit') ?? '500')
+        const events = row.events.filter(event => event.seq >= fromSeq).slice(0, limit)
+        const nextFrom = events.length > 0 ? events[events.length - 1]!.seq + 1 : fromSeq
+        const hasMore = row.events.some(event => event.seq >= nextFrom)
+        json(response, 200, {
+          title: row.title,
+          last_seq: row.last_seq,
+          events,
+          next_from_seq: nextFrom,
+          has_more: hasMore,
+        })
+        return
+      }
+      if (request.method === 'DELETE') {
+        syncSessions.delete(sessionId)
+        json(response, 200, { ok: true })
+        return
+      }
     }
     if (request.method === 'POST' && path === '/api/llm/v1/chat/completions') {
       if (!bearerAuthorized(request)) {

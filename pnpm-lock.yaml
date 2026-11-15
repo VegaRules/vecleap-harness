@@ -1655,9 +1655,15 @@ importers:
 
   packages/api/vecleap-hub-controller:
     dependencies:
+      '@deepseek-ai/dsh-session':
+        specifier: workspace:*
+        version: link:../../core/session
       '@deepseek-ai/dsh-typert-protocol':
         specifier: workspace:*
         version: link:../../typert/protocol
+      '@deepseek-ai/dsh-vecleap-hub-session-sync':
+        specifier: workspace:*
+        version: link:../../session/vecleap-hub-session-sync
       zod:
         specifier: ^4.4.3
         version: 4.4.3
@@ -2547,6 +2553,9 @@ importers:
       '@deepseek-ai/dsh-vecleap-auth-stub':
         specifier: workspace:*
         version: link:../../credentials/vecleap-auth-stub
+      '@deepseek-ai/dsh-vecleap-hub-session-sync':
+        specifier: workspace:*
+        version: link:../../session/vecleap-hub-session-sync
     devDependencies:
       '@deepseek-ai/cordis':
         specifier: workspace:~
@@ -6417,6 +6426,9 @@ importers:
       '@deepseek-ai/dsh-client-locale':
         specifier: workspace:*
         version: link:../locale
+      '@deepseek-ai/dsh-client-ui-layout':
+        specifier: workspace:*
+        version: link:../ui-layout
       '@deepseek-ai/dsh-client-ui-primitives':
         specifier: workspace:*
         version: link:../ui-primitives
@@ -6426,6 +6438,9 @@ importers:
       '@deepseek-ai/dsh-client-ui-settings':
         specifier: workspace:*
         version: link:../ui-settings
+      '@deepseek-ai/dsh-client-ui-sidebar':
+        specifier: workspace:*
+        version: link:../ui-sidebar
       '@deepseek-ai/dsh-client-ui-slots':
         specifier: workspace:*
         version: link:../ui-slots
@@ -12586,6 +12601,33 @@ importers:
       '@deepseek-ai/dsh-working-directory':
         specifier: workspace:*
         version: link:../working-directory
+
+  packages/session/vecleap-hub-session-sync:
+    devDependencies:
+      '@deepseek-ai/cordis':
+        specifier: workspace:~
+        version: link:../../../vendor/cordis
+      '@deepseek-ai/dsh-agent-loop-testkit':
+        specifier: workspace:*
+        version: link:../../test-support/agent-loop-testkit
+      '@deepseek-ai/dsh-credentials':
+        specifier: workspace:*
+        version: link:../../credentials/credentials
+      '@deepseek-ai/dsh-credentials-local':
+        specifier: workspace:*
+        version: link:../../credentials/credentials-local
+      '@deepseek-ai/dsh-deepseek-account':
+        specifier: workspace:*
+        version: link:../../credentials/deepseek-account
+      '@deepseek-ai/dsh-session':
+        specifier: workspace:*
+        version: link:../../core/session
+      '@deepseek-ai/dsh-vecleap-auth-stub':
+        specifier: workspace:*
+        version: link:../../credentials/vecleap-auth-stub
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
 
   packages/session/working-directory:
     dependencies:

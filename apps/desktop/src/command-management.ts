@@ -5,6 +5,7 @@ import { isAbsolute, join, normalize, win32 } from 'node:path'
 import { userInfo } from 'node:os'
 import { promisify } from 'node:util'
 import type { MessageBoxOptions, MessageBoxReturnValue } from 'electron'
+import { desktopCliLauncherFilename } from './cli-launcher.ts'
 import type { DesktopMessages } from './locale.ts'
 import type { UpdateDialogOptions } from './update-dialog.ts'
 
@@ -55,7 +56,7 @@ function parseState(value: unknown, platform: NodeJS.Platform): CommandState {
   if (!object(value) || typeof value.fingerprint !== 'string' || !/^[a-f0-9]{64}$/u.test(value.fingerprint)
     || typeof value.managed !== 'boolean' || typeof value.available !== 'boolean') throw new Error('Invalid command-manager response.')
   const destination = platform === 'win32' && typeof value.directory === 'string'
-    ? join(value.directory, 'dsh.cmd') : value.destination
+    ? join(value.directory, desktopCliLauncherFilename('win32')) : value.destination
   const launcher = platform === 'win32' ? destination : value.launcher
   if (typeof destination !== 'string' || !isAbsolute(destination) || typeof launcher !== 'string' || !isAbsolute(launcher)) {
     throw new Error('Invalid command-manager locations.')

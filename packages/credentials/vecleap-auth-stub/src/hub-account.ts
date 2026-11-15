@@ -25,6 +25,7 @@ import {
   hubRefresh,
   labListDatasets,
   normalizeBaseURL,
+  resolveHubOrigin,
   urlUsesHubLlm,
 } from './hub-client.ts'
 import type { HubDataset, HubStoredSession, HubWorkspace } from './hub-types.ts'
@@ -178,6 +179,16 @@ export default class VecleapHubAccount extends DeepSeekAccount {
    * @param workspaceId - Hub workspace id.
    * @returns datasets from Lab for that workspace.
    */
+  /**
+   * Run a Hub REST call with a fresh access token when the user is signed in.
+   * @param fn - callback receiving the stored Hub session.
+   */
+  async withAuthorizedSession<T>(fn: (session: HubStoredSession) => Promise<T>): Promise<T | undefined> {
+    const session = await this.sessionWithFreshAccessToken()
+    if (session === undefined) return undefined
+    return fn(session)
+  }
+
   async listDatasets(workspaceId: number): Promise<HubDataset[]> {
     const session = await this.sessionWithFreshAccessToken()
     if (session === undefined) return []
@@ -303,7 +314,16 @@ export default class VecleapHubAccount extends DeepSeekAccount {
     if (record === undefined || record.kind !== 'grant') return undefined
     const parsed = storedSessionSchema.safeParse(record.payload)
     if (!parsed.success) return undefined
-    if (normalizeBaseURL(parsed.data.hubBaseURL) !== this.hubBaseURL) return undefined
+    const storedOrigin = normalizeBaseURL(parsed.data.hubBaseURL)
+    const configuredOrigin = this.hubBaseURL
+    const equivalent = storedOrigin === configuredOrigin
+      || resolveHubOrigin(storedOrigin) === resolveHubOrigin(configuredOrigin)
+    if (!equivalent) {
+      this.ctx.logger.warn(
+        `vecleap-hub: ignoring stored session (hub origin mismatch: stored=${storedOrigin} configured=${configuredOrigin})`,
+      )
+      return undefined
+    }
     return parsed.data
   }
 

@@ -12,7 +12,9 @@
   "references": [
     { "path": "../../../vendor/cordis" },
     { "path": "../../credentials/deepseek-account" },
+    { "path": "../../core/session" },
     { "path": "../../credentials/vecleap-auth-stub" },
+    { "path": "../../session/vecleap-hub-session-sync" },
     { "path": "../../typert/protocol" }
   ]
 }

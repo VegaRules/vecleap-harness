@@ -2,7 +2,14 @@
 import type { Context } from '@deepseek-ai/cordis'
 import type {} from '@deepseek-ai/dsh-api-gateway/client'
 import vecleapHubRemote from '@deepseek-ai/dsh-api-vecleap-hub-controller/remote'
-import type { HubDataset, HubWorkspace, VecleapHubEndpoints, VecleapHubLoginResult } from '../types.ts'
+import type {
+  HubChatMessage,
+  HubChatSessionSummary,
+  HubDataset,
+  HubWorkspace,
+  VecleapHubEndpoints,
+  VecleapHubLoginResult,
+} from '../types.ts'
 
 /** Generated `vecleapHub` namespace face. */
 export interface VecleapHubRemote {
@@ -10,6 +17,9 @@ export interface VecleapHubRemote {
   loginWithPassword(email: string, password: string): Promise<VecleapHubLoginResult>
   listWorkspaces(): Promise<HubWorkspace[]>
   listDatasets(workspaceId: number): Promise<HubDataset[]>
+  listChatSessions(): Promise<HubChatSessionSummary[]>
+  loadChatSession(sessionId: string): Promise<{ readonly title: string; readonly messages: HubChatMessage[] }>
+  linkChatSession(localSessionId: string, hubSessionId: string): Promise<{ readonly linked: true }>
 }
 
 declare module '@deepseek-ai/dsh-api-gateway/client' {

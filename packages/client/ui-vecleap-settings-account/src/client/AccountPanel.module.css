@@ -108,3 +108,100 @@
 .rowValue {
   font-size: 14px;
 }
+
+.cloudBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+}
+
+.cloudHint {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  opacity: 0.78;
+}
+
+.cloudList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cloudRow {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, currentColor 10%, transparent);
+  background: color-mix(in srgb, currentColor 4%, transparent);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.cloudTitle {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.cloudMeta {
+  font-size: 11px;
+  opacity: 0.65;
+}
+
+.cloudEmpty {
+  margin: 0;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.cloudPreview {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.cloudPreviewActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.cloudTranscript {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 220px;
+  overflow: auto;
+  padding: 8px;
+  border-radius: 8px;
+  background: color-mix(in srgb, currentColor 5%, transparent);
+}
+
+.cloudUser,
+.cloudAssistant {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+.cloudUser {
+  opacity: 0.95;
+}
+
+.cloudAssistant {
+  opacity: 0.82;
+}
