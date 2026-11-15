@@ -1,0 +1,25 @@
+# Bilingual-pair consistency record for development-workflow.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write docs/development-workflow.md
+/:
+  en: 5927c8dbd6774283
+  zh: 22474e97bb85884a
+/development-workflow:
+  en: eaa10f02f2d74eab
+  zh: 99ae75e8157427cf
+/development-workflow/branch-ownership:
+  en: cf749b555731de81
+  zh: 057caa19f77e7010
+/development-workflow/daily-development-and-review:
+  en: bdec6dd0ecbea691
+  zh: 5e583c44ec36fd54
+/development-workflow/verification:
+  en: 58ffbca276c305bf
+  zh: 27f4125e50c6795d
+/development-workflow/release:
+  en: 2de9f955362f496c
+  zh: 499f419bef1a1925
+/development-workflow/branch-protection-and-ai-boundaries:
+  en: 8fade88e5696ef9b
+  zh: 581da7ce6ea90569
