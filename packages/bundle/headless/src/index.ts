@@ -47,12 +47,15 @@ export interface Config {
   sessionId?: string
   /** Whether stdout carries the machine-readable event stream instead of final text. */
   json?: boolean
+  /** With `json`, also stream reasoning and reply fragments as `delta` events while they are generated. */
+  deltas?: boolean
 }
 
 export const Config: z<Config> = z.object({
   task: z.string(),
   sessionId: z.string(),
   json: z.boolean(),
+  deltas: z.boolean(),
 })
 
 /** Outcome of one owned run interval. */
@@ -360,7 +363,7 @@ async function run(ctx: Context, config: Config, io: HeadlessIo): Promise<void> 
     assertAdoptable(agent.session.header, liveEvents(agent.session), sessionId, cwd)
   }
   const firstSeq = agent.session.seq
-  const projection = config.json === true ? projectJsonRun(ctx, agent, io.stdout, { cwd }) : undefined
+  const projection = config.json === true ? projectJsonRun(ctx, agent, io.stdout, { cwd, deltas: config.deltas === true }) : undefined
   const stopReasoning = projection === undefined ? streamReasoning(ctx, agent, io.stderr) : undefined
   let failure: { error: unknown; atOffset: SessionLogOffset } | undefined
   const stopErrors = ctx.on('agent/error', ({ agent: subject, error }) => {

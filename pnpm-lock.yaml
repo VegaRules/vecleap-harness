@@ -824,6 +824,93 @@ importers:
         specifier: workspace:*
         version: link:../../packages/skill/skill
 
+  apps/vecleap-cloud:
+    dependencies:
+      '@deepseek-ai/cordis-plugin-group':
+        specifier: workspace:~
+        version: link:../../vendor/group
+      '@deepseek-ai/dsh':
+        specifier: workspace:*
+        version: link:../cli
+      '@deepseek-ai/dsh-anonymous-user-id':
+        specifier: workspace:*
+        version: link:../../packages/identity/anonymous-user-id
+      '@deepseek-ai/dsh-attachment':
+        specifier: workspace:*
+        version: link:../../packages/attachment/attachment
+      '@deepseek-ai/dsh-bash-local':
+        specifier: workspace:*
+        version: link:../../packages/shell/bash-local
+      '@deepseek-ai/dsh-client-store':
+        specifier: workspace:*
+        version: link:../../packages/client/store
+      '@deepseek-ai/dsh-client-ui-primitives':
+        specifier: workspace:*
+        version: link:../../packages/client/ui-primitives
+      '@deepseek-ai/dsh-client-ui-slots':
+        specifier: workspace:*
+        version: link:../../packages/client/ui-slots
+      '@deepseek-ai/dsh-compaction':
+        specifier: workspace:*
+        version: link:../../packages/compaction/compaction
+      '@deepseek-ai/dsh-deepseek-account':
+        specifier: workspace:*
+        version: link:../../packages/credentials/deepseek-account
+      '@deepseek-ai/dsh-fs':
+        specifier: workspace:*
+        version: link:../../packages/fs/fs
+      '@deepseek-ai/dsh-jobs':
+        specifier: workspace:*
+        version: link:../../packages/jobs/jobs
+      '@deepseek-ai/dsh-llm-deepseek':
+        specifier: workspace:*
+        version: link:../../packages/llm/llm-deepseek
+      '@deepseek-ai/dsh-output-retention':
+        specifier: workspace:*
+        version: link:../../packages/util/output-retention
+      '@deepseek-ai/dsh-ptc-runtime':
+        specifier: workspace:*
+        version: link:../../packages/ptc-runtime/ptc-runtime
+      '@deepseek-ai/dsh-sandbox':
+        specifier: workspace:*
+        version: link:../../packages/sandbox/sandbox
+      '@deepseek-ai/dsh-scope':
+        specifier: workspace:*
+        version: link:../../packages/core/scope
+      '@deepseek-ai/dsh-sdk-protocol':
+        specifier: workspace:*
+        version: link:../../packages/sdk/protocol
+      '@deepseek-ai/dsh-session-persistence':
+        specifier: workspace:*
+        version: link:../../packages/session/session-persistence
+      '@deepseek-ai/dsh-session-query':
+        specifier: workspace:*
+        version: link:../../packages/session-query/session-query
+      '@deepseek-ai/dsh-session-telemetry':
+        specifier: workspace:*
+        version: link:../../packages/session/session-telemetry
+      '@deepseek-ai/dsh-session-title-llm':
+        specifier: workspace:*
+        version: link:../../packages/session/session-title-llm
+      '@deepseek-ai/dsh-shell':
+        specifier: workspace:*
+        version: link:../../packages/shell/shell
+      '@deepseek-ai/dsh-spill':
+        specifier: workspace:*
+        version: link:../../packages/spill/spill
+      '@deepseek-ai/dsh-util-time':
+        specifier: workspace:*
+        version: link:../../packages/util/time
+      '@deepseek-ai/dsh-util-workspace-path':
+        specifier: workspace:*
+        version: link:../../packages/util/workspace-path
+      '@deepseek-ai/dsh-workflow':
+        specifier: workspace:*
+        version: link:../../packages/workflow/workflow
+      '@deepseek-ai/schemastery':
+        specifier: link:../../vendor/schemastery
+        version: link:../../vendor/schemastery
+
   apps/web:
     devDependencies:
       '@deepseek-ai/cordis-plugin-group':

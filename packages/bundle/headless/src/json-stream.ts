@@ -33,6 +33,12 @@ export interface JsonProjectionOptions {
   cwd?: string
   /** Per-string and per-key byte cap; longer values are truncated and flagged. */
   maxStringBytes?: number
+  /**
+   * Also emit `delta` events for reasoning and reply fragments as the model
+   * streams them, so a host can render the reply live. The committed
+   * `thinking` / `text` events and the lossless `final` event are unchanged.
+   */
+  deltas?: boolean
 }
 
 /** The live handle of one `--json` projection. */
@@ -317,6 +323,19 @@ export function projectJsonRun(
 
   write({ type: 'session', sessionId: agent.id, cwd: options.cwd ?? process.cwd() })
   const stopSession = ctx.on('session/event', onSessionEvent)
+  let position = { turn: 0, step: 0 }
+  const stopDeltas = options.deltas !== true ? () => {} : ctx.on('agent/assistant-stream', ({ agent: subject, frame }) => {
+    if (subject !== agent || disposed) return
+    if (frame.type === 'start') {
+      position = { turn: frame.turn, step: frame.step }
+      return
+    }
+    if (frame.type !== 'chunk') return
+    const chunk = frame.chunk
+    if ((chunk.type === 'reasoning-delta' || chunk.type === 'text-delta') && chunk.text !== '') {
+      write({ type: 'delta', kind: chunk.type === 'reasoning-delta' ? 'reasoning' : 'text', ...position, text: chunk.text })
+    }
+  })
 
   return {
     finish(text: string): void {
@@ -327,6 +346,7 @@ export function projectJsonRun(
     dispose(): void {
       disposed = true
       stopSession()
+      stopDeltas()
     },
   }
 }

@@ -1,0 +1,110 @@
+# VecLeap cloud Agent overlay for the headless profile:
+#
+#   node launch.mjs --profile headless --patch cloud.patch.yml --json [--session-id <id>] -
+#
+# VecLeap Hub's worker runs one process per task inside its own sandbox, with
+# network access only to Hub. Every model call goes through Hub's LLM gateway
+# with the task's credential, and Track is reached through Hub's /mcp/track.
+#
+# Environment set by the worker:
+#   VECLEAP_HUB_URL       Hub base URL reachable from the sandbox
+#   VECLEAP_API_KEY       the task's lease-bound token
+#   VECLEAP_TASK_ID       Hub Agent task id, for Track capability exchange
+#   VECLEAP_MODEL         catalog model id (default glm-5.3-flash)
+#   VECLEAP_TRACK         1 to connect Track for this task
+#   DSH_PERMISSION_MODE   danger-full-access: Hub's sandbox is the boundary,
+#                         so the harness does not nest its own
+
+# Stream reasoning and reply fragments as `delta` events for live rendering.
+# A row's config is replaced as a whole, so the headless profile's own keys
+# are restated.
+- id: headless-runner
+  config:
+    task: !!js ctx.headlessStartup.task
+    sessionId: !!js ctx.headlessStartup.sessionId
+    json: !!js ctx.headlessStartup.json
+    deltas: true
+
+# No account login, plugin installation, telemetry or internet tools in the
+# cloud: the process can only reach Hub.
+- id: deepseek-account
+  disabled: true
+- id: llm-deepseek-account
+  disabled: true
+- id: plugin-manager
+  disabled: true
+- id: tool-plugin-manager
+  disabled: true
+- id: otel
+  disabled: true
+- id: session-telemetry-otel
+  disabled: true
+- id: web-search-deepseek
+  disabled: true
+- id: web-fetch-http
+  disabled: true
+- id: tool-web
+  disabled: true
+
+# Nobody answers approval prompts in the cloud.
+- id: approval
+  config:
+    policy: never
+- id: permission
+  config:
+    presets:
+      read-only: { sandbox: read-only, approval: never }
+      workspace-write: { sandbox: workspace-write, approval: never }
+      danger-full-access: { sandbox: danger-full-access, approval: never }
+
+# Models through Hub's gateway. maxTokens must not exceed Hub's catalog
+# (hub/configs/models.yaml), which rejects larger explicit limits.
+- id: llm-pi-ai
+  config:
+    providers:
+      openai:
+        apiKeyEnv: VECLEAP_API_KEY
+        baseURL: !!js "(process.env.VECLEAP_HUB_URL ?? 'http://127.0.0.1:8900').replace(/\\/+$/, '') + '/api/llm/v1'"
+        api: openai-completions
+        models:
+          - { id: glm-5.3-flash, contextWindow: 128000, maxTokens: 4096 }
+          - { id: glm-5.3, contextWindow: 128000, maxTokens: 4096 }
+          - { id: deepseek-flash, contextWindow: 128000, maxTokens: 8192 }
+          - { id: deepseek-v4-pro, contextWindow: 128000, maxTokens: 32768 }
+          - { id: qwen3.8-flash, contextWindow: 128000, maxTokens: 8192 }
+          - { id: qwen3.8-max, contextWindow: 128000, maxTokens: 8192 }
+          - { id: kimi-k2-turbo-preview, contextWindow: 128000, maxTokens: 16384 }
+          - { id: kimi-latest, contextWindow: 128000, maxTokens: 8192 }
+
+- id: agent-default-model
+  config:
+    provider: openai
+    model: !!js "process.env.VECLEAP_MODEL || 'glm-5.3-flash'"
+
+# Track through Hub with a five-minute capability exchanged for the task's
+# token on demand; credentials never reach tool arguments or the model. Track
+# is optional: Hub sets VECLEAP_TRACK=1 only when the request concerns it.
+- insert:
+    - id: mcp-track
+      name: '@deepseek-ai/dsh-mcp-client'
+      disabled: !!js "process.env.VECLEAP_TRACK !== '1'"
+      config:
+        serverName: track
+        transport: streamable-http
+        url: !!js "(process.env.VECLEAP_HUB_URL ?? 'http://127.0.0.1:8900').replace(/\\/+$/, '') + '/mcp/track'"
+        requestCredentials: !!js |
+          (() => {
+            const hub = (process.env.VECLEAP_HUB_URL ?? 'http://127.0.0.1:8900').replace(/\/+$/, '')
+            let cached = null
+            return async (signal, forceRefresh) => {
+              if (!forceRefresh && cached && cached.expires > Date.now()) return { Authorization: `Bearer ${cached.token}` }
+              const response = await fetch(`${hub}/api/agent/tasks/${process.env.VECLEAP_TASK_ID}/track/token`, {
+                method: 'POST', signal, redirect: 'error',
+                headers: { Authorization: `Bearer ${process.env.VECLEAP_API_KEY}` },
+              })
+              if (!response.ok) throw new Error(`Track capability rejected (${response.status})`)
+              const body = await response.json()
+              cached = { token: body.access_token, expires: Date.now() + (body.expires_in - 60) * 1000 }
+              return { Authorization: `Bearer ${cached.token}` }
+            }
+          })()

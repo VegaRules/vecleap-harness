@@ -1,0 +1,9 @@
+# Build context for apps/vecleap-cloud/Dockerfile: sources plus built lib/.
+**/node_modules
+.git
+website
+snapshots
+benchmarks
+apps/desktop/dist
+apps/desktop/release
+**/*.tsbuildinfo

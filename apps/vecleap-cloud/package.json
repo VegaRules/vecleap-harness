@@ -1,0 +1,47 @@
+{
+  "name": "@vecleap/harness-cloud",
+  "description": "VecLeap Hub cloud Agent runtime: dsh plus the peers its composition needs, the cloud profile overlay and the sandbox launcher. Packaged with `pnpm --filter @vecleap/harness-cloud deploy --prod --legacy <dir>`.",
+  "version": "0.2.1-alpha.2",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "vecleap-harness-cloud": "launch.mjs"
+  },
+  "files": [
+    "launch.mjs",
+    "cloud.patch.yml",
+    "scripts/materialize-links.mjs",
+    "README.md"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@deepseek-ai/cordis-plugin-group": "workspace:~",
+    "@deepseek-ai/dsh": "workspace:*",
+    "@deepseek-ai/dsh-anonymous-user-id": "workspace:*",
+    "@deepseek-ai/dsh-attachment": "workspace:*",
+    "@deepseek-ai/dsh-bash-local": "workspace:*",
+    "@deepseek-ai/dsh-client-store": "workspace:*",
+    "@deepseek-ai/dsh-client-ui-primitives": "workspace:*",
+    "@deepseek-ai/dsh-client-ui-slots": "workspace:*",
+    "@deepseek-ai/dsh-compaction": "workspace:*",
+    "@deepseek-ai/dsh-deepseek-account": "workspace:*",
+    "@deepseek-ai/dsh-fs": "workspace:*",
+    "@deepseek-ai/dsh-jobs": "workspace:*",
+    "@deepseek-ai/dsh-llm-deepseek": "workspace:*",
+    "@deepseek-ai/dsh-output-retention": "workspace:*",
+    "@deepseek-ai/dsh-ptc-runtime": "workspace:*",
+    "@deepseek-ai/dsh-sandbox": "workspace:*",
+    "@deepseek-ai/dsh-scope": "workspace:*",
+    "@deepseek-ai/dsh-sdk-protocol": "workspace:*",
+    "@deepseek-ai/dsh-session-persistence": "workspace:*",
+    "@deepseek-ai/dsh-session-query": "workspace:*",
+    "@deepseek-ai/dsh-session-telemetry": "workspace:*",
+    "@deepseek-ai/dsh-session-title-llm": "workspace:*",
+    "@deepseek-ai/dsh-shell": "workspace:*",
+    "@deepseek-ai/dsh-spill": "workspace:*",
+    "@deepseek-ai/dsh-util-time": "workspace:*",
+    "@deepseek-ai/dsh-util-workspace-path": "workspace:*",
+    "@deepseek-ai/dsh-workflow": "workspace:*",
+    "@deepseek-ai/schemastery": "workspace:~"
+  }
+}
