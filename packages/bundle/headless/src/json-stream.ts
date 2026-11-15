@@ -8,6 +8,8 @@
  */
 
 import type { Context } from '@deepseek-ai/cordis'
+import type { ToolDefinition } from '@deepseek-ai/dsh-tools'
+import type {} from '@deepseek-ai/dsh-tools'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import { lastAssistantStreamChunk } from '@deepseek-ai/dsh-llm/assistant-stream'
 import type { SessionEvent } from '@deepseek-ai/dsh-session'
@@ -253,6 +255,7 @@ export function projectJsonRun(
   options: JsonProjectionOptions = {},
 ): JsonProjection {
   const maxStringBytes = options.maxStringBytes ?? MAX_STRING_BYTES
+  const calls = new Map<string, { tool: ToolDefinition | undefined; args: unknown }>()
   let disposed = false
   let stepUsage: StepUsageState = { usage: undefined, complete: true }
 
@@ -295,24 +298,59 @@ export function projectJsonRun(
       case 'turn/end':
         write({ type: 'status', phase: 'turn_end', turn: event.data.turn, reason: event.data.reason })
         return
-      case 'tool/call':
+      case 'tool/ptc-dispatch-start': {
+        const data = event.data
+        const tool = ctx.get('tools')?.get(data.name, agent)
+        calls.set(String(data.subCallId), { tool, args: data.arguments })
+        const presentation = tool?.presentCall?.(data.arguments)
+        write({ type: 'tool_call', callId: data.subCallId, parentCallId: data.parentCallId,
+          tool: data.name, input: data.arguments, ...presentation === undefined ? {} : { presentation } })
+        return
+      }
+      case 'tool/ptc-dispatch': {
+        const data = event.data
+        const call = calls.get(String(data.subCallId))
+        const presentation = call?.tool?.presentResult?.(call.args, {
+          content: data.content,
+          isError: data.isError,
+          ...data.meta === undefined ? {} : { meta: data.meta },
+        })
+        calls.delete(String(data.subCallId))
+        write({ type: 'tool_result', callId: data.subCallId, parentCallId: data.parentCallId,
+          status: data.isError ? 'error' : 'completed', result: resultText(data.content), ...presentation === undefined ? {} : { presentation } })
+        return
+      }
+      case 'tool/call': {
+        const args = parseArguments(event.data.arguments)
+        const tool = ctx.get('tools')?.get(event.data.name, agent)
+        calls.set(String(event.data.callId), { tool, args })
+        const presentation = tool?.presentCall?.(args)
         write({
           type: 'tool_call',
           callId: event.data.callId,
           tool: event.data.name,
-          input: parseArguments(event.data.arguments),
+          input: args,
+          ...presentation === undefined ? {} : { presentation },
         })
         return
+      }
       case 'tool/result': {
         // Compaction replaces older results in the surface; those are history,
         // not this run's output, and would otherwise duplicate a callId.
         if (event.surfaceOp !== 'append') return
         const message = event.data.message
+        const call = calls.get(String(message.toolCallId))
+        const presentation = call?.tool?.presentResult?.(call.args, {
+          content: [...message.content], isError: message.isError === true,
+          ...event.data.meta === undefined ? {} : { meta: event.data.meta },
+        })
+        calls.delete(String(message.toolCallId))
         write({
           type: 'tool_result',
           callId: message.toolCallId,
           status: message.isError === true ? 'error' : 'completed',
           result: resultText(message.content),
+          ...presentation === undefined ? {} : { presentation },
         })
         return
       }
@@ -345,6 +383,7 @@ export function projectJsonRun(
     },
     dispose(): void {
       disposed = true
+      calls.clear()
       stopSession()
       stopDeltas()
     },

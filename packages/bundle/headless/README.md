@@ -151,3 +151,7 @@ These limits tell you when headless does not fit and what it needs from the `dsh
 None.
 
 </details>
+
+Tool call and result JSON events include an optional `presentation` render intent from the scoped tool definition. Result presenters receive the committed content and presentation metadata, while raw `input` and `result` remain available. Presentations share the existing event byte limits; consumers must fall back to raw content when `truncated` is true. No session format or model input changes are introduced.
+
+Nested committed PTC dispatches use the same tool call/result events with `parentCallId`, preserving actual execution enclosure. They do not represent child Agent session lifecycle.
